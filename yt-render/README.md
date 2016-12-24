@@ -40,6 +40,6 @@ key/value pairs and a "section" header. For example:
 
 
 * The "\[\_\_track\_\_\]" header is mandatory, as are all the other fields.
-* The "soundfile" value must be the name (with full path, if not in your current working directory).
+* The "soundfile" value must be the name of the WAV file to be encoded (with full path, if not in your current working directory).
 * All of the other values are typical metadata fields.
 
