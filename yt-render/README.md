@@ -3,6 +3,9 @@ MP4 video from a WAV file, with the video consisting of a static spectrogram
 of the contents of the WAV file. The intended use of this script is to render
 a piece of music into a form that can be uploaded to YouTube.
 
+This program has ben tested only on Linux. You must have both sox and ffmpeg
+installed and on the path.
+
     usage: yt-render.py [-h] [-m METADATA_FILE] [-r] [-p] [-v]
 
     Build MP4 video, with static spectrogram, from WAV file.
