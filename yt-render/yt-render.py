@@ -10,7 +10,10 @@
 # To use FFmpeg see https://bbs.archlinux.org/viewtopic.php?id=168433 and https://www.virag.si/2015/06/encoding-videos-for-youtube-with-ffmpeg/
 # ffmpeg tags are documented here: http://jonhall.info/how_to/create_id3_tags_using_ffmpeg
 
-# example of expected metadata format (section name "__track__" is mandatory, as are all of the fields)
+# example of expected metadata format
+#   section name "__track__" is required
+#   soundfile is optional but only if you use -i instead to specify the input file
+#   all other fields are required
 '''
 [__track__]
 soundfile=hexany_catalog_part1_master.wav
@@ -35,28 +38,25 @@ import textwrap
 import ConfigParser
 
 
-VERSION="1.0"
+VERSION="1.1"
 
 
-def gen_spectrogram(meta, draw_raw_graph=False):
-    basename = os.path.basename(meta["soundfile"])
+def gen_spectrogram(meta, sound_file, image_file, draw_raw_graph=False):
+    
 
     sox_spectrogram_command = 'sox %s' % ' '.join((
-        '-S "%s"' % meta["soundfile"],
+        '-S "%s"' % sound_file,
         '-n spectrogram',
         '-r' if draw_raw_graph else '',
-        '-o "%s.png"' % basename,
-        '-t "%s"' % "wav",
+        '-o "%s"' % image_file,
+        '-t "%s: %s by %s"' % (meta["album"], meta["title"], meta["composer"]),
         '-c "%s"' % "%s Published by %s" % (meta["copyright"], meta["publisher"])
     ))
 
     return os.system(sox_spectrogram_command)
 
 
-def gen_video(meta):
-    cwd = os.getcwd()
-    basename = os.path.basename(meta["soundfile"])
-
+def gen_video(meta, sound_file, image_file, video_file):
     # ffmpeg does not support the "publisher" field, we so append that datum to the copyright field
     mp4_metadata = ' '.join((
         '-metadata title="%s: %s"'                  % (meta["album"], meta["title"]),
@@ -66,7 +66,8 @@ def gen_video(meta):
         '-metadata genre="%s"'                      % meta["genre"],
         '-metadata copyright="%s Published by %s"'  % (meta["copyright"], meta["publisher"]),
         '-metadata composer="%s"'                   % meta["composer"],
-        '-metadata artist="%s"'                     % meta["artist"]
+        '-metadata artist="%s"'                     % meta["artist"],
+        '-metadata creation_time="%s"'              % datetime.datetime.utcnow().isoformat() + 'Z'
     ))
 
     mp4_command = 'ffmpeg %s' % ' '.join((
@@ -75,8 +76,8 @@ def gen_video(meta):
         '-y',
         '-loop 1',
         '-framerate 2',
-        '-i "%s"' % os.path.join(cwd, "%s.png" % basename),
-        '-i "%s"' % os.path.join(cwd, meta["soundfile"]),
+        '-i "%s"' % image_file,
+        '-i "%s"' % sound_file,
         '-c:v libx264',
         '-preset medium',
         '-tune stillimage',
@@ -88,9 +89,8 @@ def gen_video(meta):
         '-shortest',
         '-pix_fmt yuv420p',
         '-vf "scale=trunc(iw/2)*2:trunc(ih/2)*2"',
-        '-timestamp now',
         '%s' % mp4_metadata,
-        '"%s"' % os.path.join(cwd, "%s.mp4" % basename)
+        '"%s"' % video_file
     ))
 
     return os.system(mp4_command)
@@ -98,9 +98,10 @@ def gen_video(meta):
     
 def print_blank_metadata():
     print textwrap.dedent('''\
-        # all fields required
+        # soundfile is optional, all fields are required
+
         [__track__]
-        soundfile=
+        # soundfile=
         album=
         title=
         year=
@@ -126,13 +127,17 @@ def parse_args(argv):
         prog="yt-render.py"
     )
 
-    parser.add_argument("-m", help="Pathname of metadata file",
+    parser.add_argument("-m", "--meta", help="Pathname of metadata file",
         action="store", dest="metadata_file", default=None)
-    parser.add_argument("-r", help="Draw spectrograph without axes/legends",
+    parser.add_argument("-i", "--in", help="Pathname of input sound file",
+        action="store", dest="sound_file", default=None)
+    parser.add_argument("-o", "--out", help="Pathname of output video file",
+        action="store", dest="video_file", default=None)
+    parser.add_argument("-r", "--raw", help="Draw spectrograph without axes/legends",
         action="store_true", dest="draw_raw_graph", default=False)
-    parser.add_argument("-p", help="Print a blank metadata form to the screen and exit",
+    parser.add_argument("-p", "--print", help="Print a blank metadata form to the screen and exit",
         action="store_true", dest="print_blank_metadata", default=False)
-    parser.add_argument('-v', action='version', version='%(prog)s ' + VERSION)
+    parser.add_argument('-v', "--version", action='version', version='%(prog)s ' + VERSION)
 
     return parser.parse_args(argv)
     
@@ -145,18 +150,28 @@ def main(argv):
         return 0
 
     if not args.metadata_file:
-        print "No metadata file, nothing to do"
+        print "Missing metadata file"
         return 1
-
+    
     meta = read_metadata(args.metadata_file)
-    
-    print "[[[ Generating spectrogram... ]]]"
-    gen_spectrogram(meta, args.draw_raw_graph)
 
-    print "[[[ Generating video... ]]]"
-    gen_video(meta)
+    sound_file = args.sound_file
+    if not sound_file:
+        if meta["soundfile"]:
+            sound_file = meta["soundfile"]
+        else:
+            print "Soundfile not specified in metadata or on command line"
+            return 1
     
-    print "[[[ Done! ]]]"
+    image_file = os.path.join(os.getcwd(), "%s.png" % os.path.basename(sound_file))    
+    print "[[[ Generating spectrogram... ]]]"
+    gen_spectrogram(meta, sound_file, image_file, draw_raw_graph=args.draw_raw_graph)
+
+    video_file = args.video_file if args.video_file else os.path.join(os.getcwd(), "%s.mp4" % os.path.basename(sound_file))
+    print "[[[ Generating video... ]]]"
+    gen_video(meta, sound_file, image_file, video_file)
+    print "[[[ Done! Video written to %s (spectrogram: %s]]]" % (video_file, image_file)
+
     return 0
 
 
