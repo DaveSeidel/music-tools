@@ -42,8 +42,6 @@ VERSION="1.1"
 
 
 def gen_spectrogram(meta, sound_file, image_file, draw_raw_graph=False):
-    
-
     sox_spectrogram_command = 'sox %s' % ' '.join((
         '-S "%s"' % sound_file,
         '-n spectrogram',
@@ -98,7 +96,7 @@ def gen_video(meta, sound_file, image_file, video_file):
     
 def print_blank_metadata():
     print textwrap.dedent('''\
-        # soundfile is optional, all fields are required
+        # soundfile is optional, all other fields are required
 
         [__track__]
         # soundfile=
