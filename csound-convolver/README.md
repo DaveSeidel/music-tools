@@ -29,7 +29,7 @@ Where:
 Notes:
 - You must have Csound installed and on the path.
 - The IR input file should 96K or an even divisor of 96K (e.g., 48K).
-- The GAIN_ADJUST parameter is used to reduce the level of the input file to avoid clipping; depending on the IR, convolution can add a lot of gain.
+- The GAIN parameter is used to reduce the level of the input file to avoid clipping; depending on the IR, convolution can add a lot of gain.
 
 Convolve.py requires the Csound script "convolver.csd", which must be located in the same directory as "convolve.py".
 
