@@ -19,11 +19,11 @@ The tool consists of two files, convolve.py and convolver.csd; these files may b
 
     optional arguments:
       -h, --help            show this help message and exit
-      -i SOUND\_FILE\_IN, --in SOUND\_FILE_IN
+      -i SOUND_FILE_IN, --in SOUND_FILE_IN
                             Pathname of input sound file
-      -o SOUND\_FILE\_OUT, --out SOUND\_FILE\_OUT
+      -o SOUND_FILE_OUT, --out SOUND_FILE_OUT
                             Pathname of output sound file
-      -r IR\_FILE, --ir IR\_FILE
+      -r IR_FILE, --ir IR_FILE
                             Pathname of IR file
       -g GAIN, --gain GAIN  Gain multiplier applied to output (default: 1.0)
       -s SR, --sr SR        Sample rate (default: 96000)
