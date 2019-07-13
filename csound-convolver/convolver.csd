@@ -1,19 +1,16 @@
 ;
 ; Convolver tool, applies an IR file to a sound file.
-; Assumes 96K 24-bit input and output files.
 ;
-; The IR file should 96K or an even divisor of 96K (e.g., 48K).
-;
-; This is intended to be driven by the "convolve" shell script,
+; This is intended to be driven by the "convolve.py" script,
 ; and should reside in the same directory.
 ;
-; by Dave Seidel, 2013
+; by Dave Seidel, 2013 (revised 2019)
 ;
 
 <CsoundSynthesizer>
 
 <CsInstruments>
-;sr      = 96000
+;sr      = 48000
 ;ksmps   = 1
 nchnls  = 2
 0dbfs   = 1
@@ -28,29 +25,40 @@ opcode convolver, aa, aai
   ; get input
   ain1,ain2,iwet xin
 
-  ; dry vs. wet  
+  ; dry vs. wet
   idry = 1 - iwet
 
   ; size of each convolution partion
   ipartsize = 1024
 
   ; calculate latency of pconvolve opcode
-  idel = (ksmps < ipartsize ? ipartsize + ksmps : ipartsize)/sr
+  idel = (ksmps < ipartsize ? ipartsize + ksmps : ipartsize) / sr
 
-  prints "Convolving with a latency of %f seconds\n", idel
+  prints("Convolving with a latency of %f seconds\n", idel)
 
-  awetl, awetr pconvolve iwet*(ain1+ain2), "$IRFILE", ipartsize
+  ; process left/right channels separately
+  awetL1, awetR1 pconvolve iwet*ain1, "$IRFILE1", ipartsize
+  awetL2, awetR2 pconvolve iwet*ain2, "$IRFILE2", ipartsize
 
-  ; Delay dry signal, to align it with the convolved sig
-  adryl delay idry * ain1, idel
-  adryr delay idry * ain2, idel
+  awetL = awetL1 + awetL2
+  awetR = awetR1 + awetR2
 
-  ; mix
-  aout1 = adryl+awetl
-  aout2 = adryr+awetr
-  
+  if (idry > 0) then
+    ; Delay dry signal, to align it with the convolved sig
+    adryL = delay(idry * ain1, idel)
+    adryR = delay(idry * ain2, idel)
+
+    ; mix
+    aout1 = adryL+awetL
+    aout2 = adryR+awetR
+  else
+    ; wet only, just pass it through
+    aout1 = awetL
+    aout2 = awetR
+  endif
+
   ; send output
-  xout aout1,aout2
+  xout(aout1,aout2)
 endop
 
 
@@ -59,19 +67,18 @@ instr 1
   ;prints "\n==========\ninput file: $INFILE\ngain adjustment: $GAIN\nimpulse response file: $IRFILE\noutput file: "
   ;prints Soutfile
   ;prints "\n==========\n\n"
-  
-  ; get length of file, use to set duration
-  ilen filelen "$INFILE"
-  p3 = ilen
 
-  ; read it in
-  aL, aR diskin2 "$INFILE", 1, 0, 0, 0, 8
-  
+  ; get length of file, use to set duration of instrument
+  p3 = filelen("$INFILE")
+
+; read in sound file tobe convolved
+  aL, aR diskin2 "$INFILE", 1, 0, 0, 0, 9
+
   ; convolve it
   aLc, aRc convolver aL*$GAIN, aR*$GAIN, 1
 
   ; write it out
-  outs aLc, aRc
+  outs(aLc, aRc)
 endin
 
 </CsInstruments>
