@@ -55,10 +55,14 @@ Convolve.py requires the Csound script "convolver.csd", which must be located in
 * v1.0
   * Initial version
 * v1.1
-  * Switch to Python 3
-  * Convolve left and right channels of input file separately, then combine for output
-  * Change ```-r/--ir``` option to ```-1/--ir1```, add ```-2/--ir2```
+  * Switched to Python 3
+  * Convolves left and right channels of input file separately, then combines the results for output
+  * Changed ```-r/--ir``` option to ```-1/--ir1```, add ```-2/--ir2```
   * Default sample rate is now 48K
+  
+## Acknowledgements
+
+The UDO that performs the convolution is based on Matt Ingalls' Convolution Effect in the Blue Share repository.
 
 ## Other info
 
