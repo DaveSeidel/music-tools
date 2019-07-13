@@ -28,7 +28,7 @@ opcode convolver, aa, aai
   ; dry vs. wet
   idry = 1 - iwet
 
-  ; size of each convolution partion
+  ; size of each convolution partition
   ipartsize = 1024
 
   ; calculate latency of pconvolve opcode
