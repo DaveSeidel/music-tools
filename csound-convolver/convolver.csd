@@ -32,9 +32,10 @@ opcode convolver, aa, aai
   ipartsize = 1024
 
   ; calculate latency of pconvolve opcode
-  idel = (ksmps < ipartsize ? ipartsize + ksmps : ipartsize) / sr
+  idel_samples = ksmps < ipartsize ? ipartsize + ksmps : ipartsize
+  idel_secs = idel_samples / sr
 
-  prints("Convolving with a latency of %f seconds\n", idel)
+  prints("Convolving with a latency of %f seconds (%f samples)\n", idel_secs, idel_samples)
 
   ; process left/right channels separately
   awetL1, awetR1 pconvolve iwet*ain1, "$IRFILE1", ipartsize
@@ -45,12 +46,12 @@ opcode convolver, aa, aai
 
   if (idry > 0) then
     ; Delay dry signal, to align it with the convolved sig
-    adryL = delay(idry * ain1, idel)
-    adryR = delay(idry * ain2, idel)
+    adryL = delay(idry * ain1, idel_secs)
+    adryR = delay(idry * ain2, idel_secs)
 
     ; mix
-    aout1 = adryL+awetL
-    aout2 = adryR+awetR
+    aout1 = adryL + awetL
+    aout2 = adryR + awetR
   else
     ; wet only, just pass it through
     aout1 = awetL
