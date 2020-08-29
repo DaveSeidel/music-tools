@@ -24,4 +24,6 @@ eikosany = CPS((1, 3, 5, 7, 11, 13), 3)
 find_embedded_cps(eikosany, 4)
 ```
 
+Execute the file (`python cps.py` or `python3 cps.py`) for a longer demonstration with more details.
+
 Dave Seidel, August 2020
