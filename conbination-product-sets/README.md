@@ -1,6 +1,6 @@
 This is a work in progress, written to aid in my understanding of Erv Wilson's Combination Product Sets
 
-Requires Python 3 (written and tested with Pythn 3.8.3).
+Requires Python 3 (written and tested with Python 3.8.3).
 
 The `CPS` class allows you to create any CPS, given a list of factors and the size of the combination.
 
