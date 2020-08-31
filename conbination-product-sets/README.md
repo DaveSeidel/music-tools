@@ -8,27 +8,27 @@ The `find_embedded_cps()` function derives and prints out the instances of small
 
 Examples:
 ```
-# create a hexany
-hexany = CPS((1, 3, 5, 7), 2)
+    # create a hexany
+    hexany = CPS((1, 3, 5, 7), 2)
 
-# decide where the 1/1 is
-hexany.transpose(1*3, "1*3")
+    # decide where the 1/1 is
+    hexany.transpose(1*3, "1*3")
 
-# print the resulting scale ratios
-hexany.print_scale()
+    # print the resulting scale ratios
+    print(hexany.list_scale())
 ```
 
 ```
-# create an eikosany
-eikosany = CPS((1, 3, 5, 7, 11, 13), 3)
+    # create an eikosany
+    eikosany = CPS((1, 3, 5, 7, 11, 13), 3)
 
-# print info about the eikosany
-print(eikosany)
+    # print info about the eikosany
+    print(eikosany)
 
-# summarize the hexanies contained in this eikosany, using 1*5*13 as 1/1
-hexanies = eikosany.find_embedded_cps(4, 2, transpose=(1*5*13, "1*5*13"))
-for hex in hexanies:
-    print(f"{hex.name}:\t{hex.get_scale(tabular=True)}")
+    # summarize the hexanies contained in this eikosany, using 1*5*13 as 1/1
+    hexanies = eikosany.find_embedded_cps(4, 2, transpose=(1*5*13, "1*5*13"))
+    for hex in hexanies:
+        print(f"{hex.name}:\t{hex.list_scale(tabular=True)}")
 ```
 
 Execute the file (`python cps.py` or `python3 cps.py`) for a longer demonstration with more details.
