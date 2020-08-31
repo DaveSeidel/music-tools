@@ -217,7 +217,7 @@ class CPS(object):
 
         for embed in embeds:
             embed = set(embed)
-            mults = factors.difference(embed)
+            mults = sorted(factors.difference(embed))
             for mult in mults:
                 embed = sorted(embed)
                 name = f"{embed}*{mult}"
