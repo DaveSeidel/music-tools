@@ -4,7 +4,8 @@ from fractions import Fraction
 from functools import reduce
 from itertools import combinations, repeat
 from operator import mul
-from typing import Dict, List, Tuple
+from pprint import pformat
+from typing import Dict, List, Set, Tuple
 
 
 class Ratio(Fraction):
@@ -53,6 +54,10 @@ class CpsElement(object):
     def ratio(self) -> str:
         return f"{self._frac if self._frac > 1 else '1/1'}"
 
+    @property
+    def ratio_n(self) -> Ratio:
+        return self._frac
+
     def reduce(self) -> Ratio:
         return Ratio.octave_reduce(self._product)
 
@@ -91,6 +96,10 @@ class CPS(object):
         self._factors_str = [str(f) for f in factors]
         self._multiplier = multiplier
 
+        self._product = reduce(mul, self._factors, 1)
+        # if self._multiplier:
+        #     self._product *= self._multiplier
+
         self._name = name if name else f"unamed {'-'.join(self._factors_str)}"
         self._transposition = 1
         self._transposition_str = "1"
@@ -120,6 +129,10 @@ class CPS(object):
         return self._factors
 
     @property
+    def product(self) -> int:
+        return self._product
+
+    @property
     def transposition(self) -> str:
         return self._transposition_str
 
@@ -138,6 +151,14 @@ class CPS(object):
     @property
     def relative_index(self) -> Union[List[int], None]:
         return self._relative_index
+
+    @property
+    def products(self) -> Set[str]:
+        return {str(elm.product) for elm in self._cps}
+
+    @property
+    def ratios(self) -> List[Ratio]:
+        return [elm.ratio_n for elm in self._cps]
 
     def __str__(self) -> str:
         lines = []
@@ -160,12 +181,12 @@ class CPS(object):
 
     def list_scale(self,
                    tabular: bool = False,
-                   indexed: bool = False,
+                   simple: bool = False,
                    csv: bool = False) -> str:
         if tabular:
             if self._parent:
                 sep = ',' if csv else ' '
-                blank = "" if csv else "---      "
+                blank = "" if csv else "        " if simple else ".        "
                 ref = list(repeat(blank, self._parent.size))
                 for pos, i in enumerate(self.relative_index):
                     ref[i] = f"{self._cps[pos].ratio}" if csv else f"{self._cps[pos].ratio:<9}"
@@ -190,23 +211,6 @@ class CPS(object):
             s = ','.join([str(elm.factors) for elm in self._cps])
         return s
 
-    def _build_maps(self):
-        if self._parent:
-            # map factors relative to parent CPS
-            self._relative_map = {
-                str(elm.factors): self._parent.map[str(elm.factors)]
-                for elm in self._cps
-            }
-
-            # list of reletive indexes
-            self._relative_index = [self._relative_map[str(elm.factors)] for elm in self._cps]
-
-        # map factors to index values
-        self._map = {
-            str(elm.factors): i
-            for i, elm, in enumerate(self._cps)
-        }
-
     def find_embedded_cps(self,
                           size: int,
                           choose: int,
@@ -228,6 +232,54 @@ class CPS(object):
 
         return cps_list
 
+    @classmethod
+    def find_common_tones(cls,
+                          cps_list: List[CPS],
+                          index: Union[int, None] = None) -> Dict[int, List[CPS]]:
+        """
+        Given a list of CPS instances compare the one indicated by the index parameter
+        to the others in the list, based on how many tones are in common between the
+        selected CPS and the others in the list.
+
+        Returns a dict where the key is the number of common tones, and the value is
+        a list of the CPS instances that meet that criterion.
+        """
+        product_sets = []
+        for cps in cps_list:
+            product_sets.append(cps.products)
+
+        # analyze the first one
+        ps = product_sets[0]
+        intersections = {
+            i:[] for i in range(6)
+        }
+
+        for i, other in enumerate(product_sets[1:]):
+            inter = ps.intersection(other)
+            mag = len(inter)
+            intersections[mag].append(i+1)
+
+        return {
+            k: [cps_list[i] for i in v] for k, v in intersections.items()
+        }
+
+    def _build_maps(self):
+        if self._parent:
+            # map factors relative to parent CPS
+            self._relative_map = {
+                str(elm.factors): self._parent.map[str(elm.factors)]
+                for elm in self._cps
+            }
+
+            # list of reletive indexes
+            self._relative_index = [self._relative_map[str(elm.factors)] for elm in self._cps]
+
+        # map factors to index values
+        self._map = {
+            str(elm.factors): i
+            for i, elm, in enumerate(self._cps)
+        }
+
 
 if __name__ == "__main__":
 
@@ -236,13 +288,21 @@ if __name__ == "__main__":
     # These sample functions are executed at the end of this file.
     #
 
+    def transpose_and_spawn(parent: CPS,
+                            tr: Tuple[int, Str],
+                            length: int,
+                            choose: int):
+        if tr:
+            parent.transpose(tr[0], tr[1])
+        return parent.find_embedded_cps(length, choose, transpose=tr)
+
     def print_cps(cps: CPS) -> None:
         """
         Print stuff about a CPS instance
         """
         print(cps)
-        print(f"\nratios:\t{cps.list_scale()}")
-        print(f"\nterms:\t{cps.list_factors(stars=True)}")
+        # print(f"\nratios:\t{cps.list_scale()}")
+        # print(f"\nterms:\t{cps.list_factors(stars=True)}")
 
     def print_cps_transpositions(cps: CPS, factors: List[int]) -> None:
         """
@@ -256,38 +316,106 @@ if __name__ == "__main__":
             print()
             # print(cps.get_scale())
 
-    def print_hexanies(eikosany: CPS) -> None:
+    def print_hexanies(eikosany: CPS, transposition: Tuple[int, Str]) -> None:
         """
-        Set 1/1 to 1*5*7 and print out all the embedded hexanies in various ways
+        Set 1/1 to ??? and print out all the embedded hexanies in various ways
         """
-        print(f"\n=====\n\nHexanies contained in {eikosany.name}, 1/1 = 1*5*3:")
-        eikosany.transpose(1*5*13, "1*5*13")
-        hexanies = eikosany.find_embedded_cps(4, 2, transpose=(1*5*13, "1*5*13"))
+        print(f"\n=====\n\nHexanies contained in {eikosany.name}, 1/1 = {transposition[1]}:")
+        eikosany.transpose(transposition[0], transposition[1])
+        hexanies = eikosany.find_embedded_cps(4, 2, transpose=transposition)
 
         # human-readable ASCII table
-        print(f"eikosany:\t\t{eikosany.list_scale(tabular=True)}")
+        print(f"reference:\t\t{eikosany.list_scale(tabular=True)}")
         for hex in hexanies:
-            print(f"{hex.name}:\t{hex.list_scale(tabular=True)}")
+            print(f"{hex.name}:\t{hex.list_scale(tabular=True)}\t[{hex.product}]")
+
         print()
 
         # ratios
+        print(f"1/1 = {transposition[1]}:")
         for hex in hexanies:
             print(f"{hex.name}:\t{hex.list_scale()}")
+
         print()
 
         # indexes relative to full eikosany
         for hex in hexanies:
             print(f"{hex.name}:\t{hex.relative_index}")
 
-        # CSV-formatted table
-        print("\n\n=====\n\n")
+
+    def print_hexanies_csv(eikosany: CPS, transposition: Tuple[int, Str]) -> None:
+        eikosany.transpose(transposition[0], transposition[1])
+        hexanies = eikosany.find_embedded_cps(4, 2, transpose=transposition)
+
         print(f"{eikosany.name} @ {eikosany.transposition},{eikosany.list_factors(stars=True)}")
         print(f",{eikosany.list_scale(tabular=True, csv=True)}")
+
         for hex in hexanies:
             name = hex.name.replace(" ", "")
             name = name.replace(",", "-")
             print(f"{name},{hex.list_scale(tabular=True, csv=True)}")
 
+
+    def print_hexanies_common_tones(eikosany: CPS, hexanies: List[CPS], index: int):
+        ct = CPS.find_common_tones(hexanies, 0)
+        print(f"Intersections for {hexanies[0].list_scale()} {hexanies[0].relative_index}\n")
+        for k, v in ct.items():
+            if len(v):
+                # print(f"\tcommon tones: {k} -> {pformat([i.list_scale() for i in v])}\n")
+                # print(f"common tones: {k} ->\n{pformat([i.relative_index for i in v])}\n")
+                print(f"common tones: {k} ->\n{pformat([i.name for i in v])}\n")
+
+
+    def print_hexanies2(eikosany: CPS) -> None:
+        factors = {
+            eval(f): f
+            for f in eikosany.list_factors(stars=True).split(',')
+        }
+        sorted(factors.items(), key=lambda f: f[0])
+        for n, s in factors.items():
+            print(f"\n=====\n\n1/1 Hexanies contained in {eikosany.name}, 1/1 = {s}:")
+            eikosany.transpose(n, s)
+            print(f"{'Reference:':<19}\t{eikosany.list_scale(tabular=True)}")
+
+            hexanies = eikosany.find_embedded_cps(4, 2, transpose=(n, s))
+            for hex in hexanies:
+                for i, r in enumerate(hex.ratios):
+                    if r == 1:
+                        print(f"{hex.name}:\t{hex.list_scale(tabular=True)}")
+                if hex.product == 1*3*5*7:
+                        print(f"{hex.name}:\t{hex.list_scale(tabular=True)}")
+
+        print()
+
+        print("All 1-3-5-7 hexanies across the set of eikosany transpositions")
+        for n, s in factors.items():
+            eikosany.transpose(n, s)
+            hexanies = eikosany.find_embedded_cps(4, 2, transpose=(n, s))
+            for hex in hexanies:
+                if hex.product == 1*3*5*7:
+                        print(f"{s:<7} {hex.name}:\t{hex.list_scale(tabular=True)}")
+        print()
+
+        # print("All 1-3-5-7 hexanies that start at 1/1 in their respective eikosany transpositions")
+        # for n, s in factors.items():
+        #     eikosany.transpose(n, s)
+        #     hexanies = eikosany.find_embedded_cps(4, 2, transpose=(n, s))
+        #     for hex in hexanies:
+        #         if hex.product == 1*3*5*7 and hex.ratios[0] == 1:
+        #                 print(f"{s:<7} {hex.name}:\t{hex.list_scale(tabular=True)}")
+
+        # print()
+
+    def collect_hexanies(parent: CPS, hexanies: List[CPS], names: List[str]):
+        hexanies = {hex.name.replace(' ', ''): hex for hex in hexanies}
+        collection = [hexanies[name] for name in names]
+        print("as ratios")
+        for c in collection:
+            print(f"{c.name:<19}\t{c.list_scale(tabular=True)}")
+        print()
+        print("as offsets")
+        for c in collection:
+            print(f"{c.name:<19}\t{c.relative_index}")
     #
     # Execute the demo code.
     #
@@ -297,6 +425,22 @@ if __name__ == "__main__":
     eikosany = CPS(eiko_factors, name="1-3-5-7-11-13 Eikosany")
 
     # do stuff with it
-    print_cps(eikosany)
-    print_cps_transpositions(eikosany, eiko_factors)
-    print_hexanies(eikosany)
+    # print_cps(eikosany)
+    # print_cps_transpositions(eikosany, eiko_factors)
+
+    # print_hexanies(eikosany, (1*3*5, "1*3*5"))
+    # print_hexanies_csv(eikosany, (1*3*5, "1*3*5"))
+
+    print_hexanies2(eikosany)
+
+    hexanies = transpose_and_spawn(eikosany, (1*3*5, "1*3*5"), 4, 2)
+
+    for i in range(11):
+        print_hexanies_common_tones(eikosany, hexanies, i)
+
+    print("Sequence with common tones, eikosany 1/1 = 1*3*13\n")
+    hexanies = transpose_and_spawn(eikosany, (1*3*13, "1*3*13"), 4, 2)
+    collect_hexanies(eikosany,
+                    hexanies,
+                    ('[1,3,5,7]*11',  '[1,3,5,11]*7', '[1,3,7,11]*5', '[1,3,5,13]*11'))
+
