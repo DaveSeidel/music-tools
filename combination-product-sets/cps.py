@@ -3,6 +3,7 @@ from __future__ import annotations
 from fractions import Fraction
 from functools import reduce
 from itertools import combinations, repeat
+import math
 from operator import mul
 from pprint import pformat
 from typing import Dict, List, Set, Tuple
@@ -35,7 +36,7 @@ class CpsElement(object):
         self._size = len(factors)
         self._factors = tuple(sorted(factors))
 
-        self._multiplier = multiplier
+        self._multiplier = multiplier if multiplier else 0
         if self._multiplier:
             self._factors = tuple(sorted(self._factors + (self._multiplier,)))
 
@@ -57,6 +58,10 @@ class CpsElement(object):
     @property
     def ratio_n(self) -> Ratio:
         return self._frac
+
+    @property
+    def o_C_note(self) -> int:
+        return round(1536 * (math.log(self._frac) / math.log(2)))
 
     def reduce(self) -> Ratio:
         return Ratio.octave_reduce(self._product)
@@ -97,8 +102,6 @@ class CPS(object):
         self._multiplier = multiplier
 
         self._product = reduce(mul, self._factors, 1)
-        # if self._multiplier:
-        #     self._product *= self._multiplier
 
         self._name = name if name else f"unamed {'-'.join(self._factors_str)}"
         self._transposition = 1
@@ -137,6 +140,10 @@ class CPS(object):
         return self._transposition_str
 
     @property
+    def multiplier(self) -> int:
+        return self._multiplier
+
+    @property
     def parent(self) -> Union[CPS, None]:
         return self._parent
 
@@ -159,6 +166,10 @@ class CPS(object):
     @property
     def ratios(self) -> List[Ratio]:
         return [elm.ratio_n for elm in self._cps]
+
+    @property
+    def o_C_notes(self) -> List[int]:
+        return [elm.o_C_note for elm in self._cps]
 
     def __str__(self) -> str:
         lines = []
@@ -280,6 +291,10 @@ class CPS(object):
             for i, elm, in enumerate(self._cps)
         }
 
+        self._o_C_map = {
+            n: i for i, n in enumerate(self.o_C_notes)
+        }
+
 
 if __name__ == "__main__":
 
@@ -301,8 +316,10 @@ if __name__ == "__main__":
         Print stuff about a CPS instance
         """
         print(cps)
-        # print(f"\nratios:\t{cps.list_scale()}")
+        print(f"\n{'ratios:':>10} {cps.list_scale()}")
         # print(f"\nterms:\t{cps.list_factors(stars=True)}")
+        print(f"{'o_C notes:':>10} {cps.o_C_notes}")
+        # print(cps._o_C_map)
 
     def print_cps_transpositions(cps: CPS, factors: List[int]) -> None:
         """
@@ -406,16 +423,32 @@ if __name__ == "__main__":
 
         # print()
 
-    def collect_hexanies(parent: CPS, hexanies: List[CPS], names: List[str]):
+    def collect_hexanies(parent: CPS, hexanies: List[CPS], names: List[str]) -> List[CPS]:
         hexanies = {hex.name.replace(' ', ''): hex for hex in hexanies}
         collection = [hexanies[name] for name in names]
+ 
         print("as ratios")
         for c in collection:
+            print(f"{c.name:<19}\t{c.list_scale()}")
+ 
+        print()
+        for c in collection:
             print(f"{c.name:<19}\t{c.list_scale(tabular=True)}")
+ 
         print()
         print("as offsets")
         for c in collection:
-            print(f"{c.name:<19}\t{c.relative_index}")
+            index = [f"{i:>3}" for i in c.relative_index]
+            print(f"{c.name:<19}\t[{','.join(index)} ]")
+ 
+        print()
+        print("as o_C note values")
+        for c in collection:
+            notes = [f"{n:>5}" for n in c.o_C_notes]
+            print(f"{c.name:<19}\t{','.join([n for n in notes])}")
+ 
+        return collection
+    
     #
     # Execute the demo code.
     #
@@ -431,16 +464,69 @@ if __name__ == "__main__":
     # print_hexanies(eikosany, (1*3*5, "1*3*5"))
     # print_hexanies_csv(eikosany, (1*3*5, "1*3*5"))
 
-    print_hexanies2(eikosany)
+    # print_hexanies2(eikosany)
 
-    hexanies = transpose_and_spawn(eikosany, (1*3*5, "1*3*5"), 4, 2)
+    # hexanies = transpose_and_spawn(eikosany, (1*3*5, "1*3*5"), 4, 2)
+    # eikosany.transpose(1*3*5, "1*3*5")
+    # print_cps(eikosany)
+    # print()
 
-    for i in range(11):
-        print_hexanies_common_tones(eikosany, hexanies, i)
+    # for i in range(11):
+    #     print_hexanies_common_tones(eikosany, hexanies, i)
 
-    print("Sequence with common tones, eikosany 1/1 = 1*3*13\n")
-    hexanies = transpose_and_spawn(eikosany, (1*3*13, "1*3*13"), 4, 2)
-    collect_hexanies(eikosany,
-                    hexanies,
-                    ('[1,3,5,7]*11',  '[1,3,5,11]*7', '[1,3,7,11]*5', '[1,3,5,13]*11'))
+    print("\nSequence with common tones, eikosany 1/1 = 1*5*13\n")
+    eikosany.transpose(1*5*13, "1*5*13")
+    print_cps(eikosany)
+    print()
+    hexanies = transpose_and_spawn(eikosany, (1*5*13, "1*5*13"), 4, 2)
+    collected = collect_hexanies(eikosany,
+                                 hexanies,
+                                 ('[1,3,5,7]*11',  '[1,3,5,11]*7', '[1,3,7,11]*5', '[1,3,5,13]*11'))
+    print()
+    notes_used = []
+    indexes_used = []
+    for c in collected:
+        notes_used.extend(c.o_C_notes)
+        indexes_used.extend(c.relative_index)
 
+    notes_used = {n for n in notes_used}
+    all_notes = {n for n in eikosany.o_C_notes}
+    unused_notes = all_notes - notes_used
+    notes_used = sorted([n for n in notes_used])
+    unused_notes = sorted([n for n in unused_notes])
+    print(f"used: {notes_used} len={len(notes_used)}")
+    # print(f"unused: {unused_notes} len={len(unused_notes)}")
+
+    # indexes_used = {i for i in indexes_used}
+    # indexes_used = sorted([i for i in indexes_used])
+    # print(f"indexes: {indexes_used}")
+
+    for c in collected:
+        indexes = []
+        for n in c.o_C_notes:
+            indexes.append(notes_used.index(n))
+        print(f"indexes for {c.name}: {indexes}")
+
+    # print(eikosany)
+    # print()
+    # dekany = CPS((1, 3, 5, 7, 11), choose=3, name="1-3-5-7-11 dekany")
+    # print(dekany)
+    # print(dekany.list_scale(tabular=True))
+
+    # print()
+    # dekanies = transpose_and_spawn(eikosany, (1*3*13, "1*3*13"), 5, 3)
+    # for dek in dekanies:
+    #     print(dek)
+    #     print(dek.list_scale())
+
+    # print("as ratios")
+    # for dek in dekanies:
+    #     print(f"{dek.name:<19}\t{dek.list_scale()}")
+    # print()
+    # for dek in dekanies:
+    #     print(f"{dek.name:<19}\t{dek.list_scale(tabular=True)}")
+    # print()
+    # print("as offsets")
+    # for dek in dekanies:
+    #     index = [f"{i:>3}" for i in dek.relative_index]
+    #     print(f"{dek.name:<19}\t[{','.join(index)} ]")
