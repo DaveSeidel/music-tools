@@ -124,6 +124,10 @@ class CPS(object):
         return self._name
 
     @property
+    def name_csv(self) -> str:
+        return self._name.replace(', ', '-')
+
+    @property
     def size(self) -> int:
         return self._size
 
@@ -212,7 +216,8 @@ class CPS(object):
         else:
             scale = [elm.ratio for elm in self._cps]
             # scl = f"{self._name}: {'-'.join(self._factors_str)} @ {self._transposition_str}: {' '.join(scale)}"
-            scl = ' '.join(scale)
+            sep = ', ' if csv else ' '
+            scl = sep.join(scale)
         return scl
 
     def list_factors(self, stars: bool = False) -> str:
