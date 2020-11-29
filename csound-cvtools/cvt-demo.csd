@@ -6,7 +6,7 @@
 <CsoundSynthesizer>
 <CsOptions>
 ; ES-8
---format=long -odac:hw:1,0
+--format=long -odac:hw:1,0 -m4
 </CsOptions>
 
 <CsInstruments>
@@ -35,9 +35,7 @@ instr Gate_Open_Demo
     ktrig init 1
 
     timer()
-    printarray(gk_gates, ktrig, "%0.2f", "before open")
     cvt_gate_open(ichn, igate)
-    printarray(gk_gates, ktrig, "%0.2f", "after open")
     ktrig = 0
 endin
 
@@ -46,9 +44,7 @@ instr Gate_Close_Demo
     ktrig init 1
 
     timer()
-    printarray(gk_gates, ktrig, "%0.2f", "before close")
     cvt_gate_close(igate)
-    printarray(gk_gates, ktrig, "%0.2f", "after close")
     ktrig = 0
 endin
 
@@ -58,6 +54,7 @@ instr Ramp_Demo
     ibeg = p6
     iend = p7
 
+    timer()
     cvt_ramp(ichn, idur, ibeg, iend)
 endin
 
@@ -68,6 +65,7 @@ instr AR_Demo
     imid = p7
     iend = p8
 
+    timer()
     cvt_ar_env(ichn, idur, ibeg, imid, iend)
 endin
 
