@@ -69,6 +69,16 @@ instr AR_Demo
     cvt_ar_env(ichn, idur, ibeg, imid, iend)
 endin
 
+instr LFO_Demo
+    ichn = p4
+    kamp = p5
+    kcps = p6
+    itype = p7
+
+    timer()
+    cvt_lfo(ichn, kamp, kcps, itype)
+endin
+
 </CsInstruments>
 <CsScore>
 
@@ -84,6 +94,8 @@ i "Gate_Open_Demo"  42  1  3 1
 i "Gate_Close_Demo" 47  1  1
 
 i "AR_Demo" 50 1 2 10 0 0.5 0
+
+i "LFO_Demo" 65 10 2 0.5 0.5 0
 
 e
 </CsScore>

@@ -79,3 +79,7 @@ opcode cvt_ar_env, 0, iiiii
     schedule("_ar_env", 0, idur, ichn, ibeg, imid, iend)
 endop
 
+opcode cvt_lfo, 0, ikki
+    ichn, kamp, kcps, itype xin
+    outch(ichn, lfo:a(kamp, kcps, itype))
+endop
