@@ -8,7 +8,7 @@
 
 gk_gates[] init 16
 
-;;;;;
+;;;;; instrument definitions, used by the UDOs
 
 instr +_impulse
     ichn = p4
@@ -24,21 +24,52 @@ instr +_ramp
     outch(ichn, line:a(ibeg, idur, iend))
 endin
 
-instr +_ar_env
-    idur = p3
-    ichn = p4
-    ibeg = p5
-    imid = p6
-    iend = p7
-    outch(ichn, linseg:a(ibeg, idur/2, imid, idur/2, iend))
+instr +_ar_env_eq
+    idur  = p3
+    ichn  = p4
+
+    ibeg  = p5
+    imid  = p6
+    iend  = p7
+    
+    outch(ichn, linseg:a(ibeg, idur*0.5, imid, idur*0.5, iend))
 endin
 
-;;;;;
+instr +_ar_env
+    idur  = p3
+    ichn  = p4
+
+    ibeg  = p5
+    idur1 = p6
+    
+    imid  = p7
+    idur2 = p8
+    
+    iend  = p9
+    
+    outch(ichn, linseg:a(ibeg, idur*idur1, imid, idur*idur2, iend))
+endin
+
+instr +_asr_env
+    idur  = p3
+    ichn  = p4
+
+    ibeg  = p5
+    idur1 = p6
+    
+    imid  = p7
+    idur2 = p8
+    
+    idur3 = p9
+    iend  = p10
+    outch(ichn, linseg:a(ibeg, idur*idur1, imid, idur*idur2, imid, idur*idur3, iend))
+endin
+
+;;;;; Triggers & gates
 
 opcode cvt_trigger, 0, i
     ichn xin
 
-    ; prints("[Trigger <%d>]\n", ichn)
     schedule("_impulse", 0, $CVT_TRIG_DUR, ichn, $CVT_IMP_VAL)
 endop
 
@@ -46,7 +77,6 @@ opcode cvt_gate_open, 0, ii
     ichn, igate xin
 
     iinst = nstrnum("_impulse") + (unirand(256) * 0.001)
-    ; prints("[Opening gate %d -> %f <%d>]\n", igate, iinst, ichn)
     schedule(iinst, 0, -1, ichn, $CVT_IMP_VAL)
     gk_gates[igate] = k(iinst)
 endop
@@ -54,32 +84,84 @@ endop
 opcode cvt_gate_close, 0, i
     igate xin
 
-    ; prints("[Closing gate %d]\n", igate)
     kinst = gk_gates[igate]
     turnoff2(kinst, 4+8, 0)
     gk_gates[igate] = 0
 endop
 
+;;;;; Ramps
+
+; i-rate version
 opcode cvt_ramp, 0, iiii
     ichn, idur, ibeg, iend xin
-    ; prints("[Ramp %f -> %f (%fs) <%d>]\n", ibeg, iend, idur, ichn)
     schedule("_ramp", 0, idur, ichn, ibeg, iend)
 endop
 
 ; k-rate version
 opcode cvt_ramp, 0, kkkk
     kchn, kdur, kbeg, kend xin
-    ; printks("[Ramp %f -> %f (%fs) <%d>]\n", 0, kbeg, kend, kdur, kchn)
     schedulek("_ramp", 0, kdur, kchn, kbeg, kend)
 endop
 
-opcode cvt_ar_env, 0, iiiii
+;;;;; Simple envelopes
+
+;
+; attack-release envelope (equal rise/fall)
+; args:
+; - output channel
+; - overall duration
+; - starting value
+; - max value
+; - end value
+;
+opcode cvt_ar_env_eq, 0, iiiii
     ichn, idur, ibeg, imid, iend xin
-    ; prints("[AR %f -> %f -> %f (%fs) <%d>]\n", ibeg, imid, iend, idur, ichn)
-    schedule("_ar_env", 0, idur, ichn, ibeg, imid, iend)
+    schedule("_ar_env_eq", 0, idur, ichn, ibeg, imid, iend)
 endop
 
+;
+; attack-release envelope (adjustable rise/fall)
+; args:
+; - output channel
+; - overall duration
+; - starting value
+; - duration from starting value to max value
+; - max value
+; - duration from max value to end
+; - end value
+;
+opcode cvt_ar_env, 0, iiiiiii
+    ichn, idur, ibeg, idur1, imid, iend, idur2 xin
+    schedule("_ar_env", 0, idur, ichn, ibeg, idur1, imid, iend, idur2)
+endop
+
+;
+; attack-sustain-release
+; args:
+; - output channel
+; - overall duration
+; - starting value
+; - duration from starting value to max value
+; - max (sustain) value
+; - duration of sustain
+; - duration from max value to end
+; - end value
+;
+opcode cvt_asr_env, 0, iiiiiiii
+    ichn, idur, ibeg, idur1, imid, idur2, iend, idur3 xin
+    schedule("_asr_env", 0, idur, ichn, ibeg, idur1, imid, idur2, iend, idur3)
+endop
+
+;;;;; Simple LFOs
+
+; bipolar LFO, see lfo opcode for args
 opcode cvt_lfo, 0, ikki
     ichn, kamp, kcps, itype xin
     outch(ichn, lfo:a(kamp, kcps, itype))
+endop
+
+; unipolar LFO, see lfo opcode for args
+opcode cvt_lfo_uni, 0, ikki
+    ichn, kamp, kcps, itype xin
+    outch(ichn, lfo:a(kamp, kcps, itype) + a(kamp))
 endop
