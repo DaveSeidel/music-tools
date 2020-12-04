@@ -9,7 +9,8 @@ However, for typical CV usage, it's more useful to stay with the range -5V to 5V
 The demo program (`cvt-demo.csd`), when used to produce a sound file, which will show the shapes of the emitted signals when viewed in an audio editor such as Audacity
 
 Dave Seidel
-11/29/2020, updated 12/1/2020
+11/29/2020 (initial version)
+12/4/2020 (latest update)
 
 ## UDOs
 
@@ -49,37 +50,45 @@ The LFO opcodes are synchronous, in the sens that they run for the lifetime of t
 Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended range: -0.5 to 0.5 (-5V to 5V).
 
  * cvt_ramp
+ * cvt_exp_ramp
 
     ```
     cvt_ramp(i_channel, i_duration, i_start, i_end)
+    cvt_exp_ramp(i_channel, i_duration, i_start, i_end)
     ```
 
-    Emits a linear ramp, specifying the duration, starting value, and ending value.
+    Emits a ramp, specifying the duration, starting value, and ending value. The "exp" version uses a exponential ramp; the other version is linear.
  * cvt_ar_env_eq
+ * cvt_ar_exp_env_eq
 
     ```
     cvt_ar_env_eq(i_channel, i_duration, i_start, i_middle, i_end)
+    cvt_ar_exp_env_eq(i_channel, i_duration, i_start, i_middle, i_end)
     ```
 
-    Emits a linear Attack/Release evelope with equal-length rise and fall, specifying the overall duration and starting, middle and ending values.
+    Emits an Attack/Release envelope with equal-length rise and fall, specifying the overall duration and starting, middle and ending values. The "exp" version uses a exponential ramp; the other version is linear.
 
  * cvt_ar_env
+ * cvt_ar_exp_env
 
     ```
     cvt_ar_env(i_channel, i_duration, i_start, i_dur1, i_middle, i_end, i_dur2)
+    cvt_ar_exp env(i_channel, i_duration, i_start, i_dur1, i_middle, i_end, i_dur2)
     ```
 
-    Emits a linear Attack/Release evelope with control over each segment, specifying the overall duration, starting, middle and ending values, and relative length of each segment.
+    Emits an Attack/Release envelope with control over each segment, specifying the overall duration, starting, middle and ending values, and relative length of each segment. The "exp" version uses a exponential ramp; the other version is linear.
     
     Segment durations are specified as a fraction of the total duration and should add up to 1. `i_dur1` is the relative legnth of the rise, and `i_dur2` is he relative length of the fall For example, use `i_dur1=0.5` and `i_dur2=0.5` for equal-length segments.
 
  * cvt_asr_env
+ * cvt_asr_exp_env
 
     ```
     cvt_asr_env(i_channel, i_duration, i_start, i_dur1, i_middle, i_dur2, i_dur3, i_end)
+    cvt_asr_exp_env(i_channel, i_duration, i_start, i_dur1, i_middle, i_dur2, i_dur3, i_end)
     ```
 
-    Emits a linear Attack/Sustain/Release evelope with control over each segment, specifying the overall duration, starting, middle and ending values, and relative legnth of each segment.
+    Emits an Attack/Sustain/Release envelope with control over each segment, specifying the overall duration, starting, middle and ending values, and relative legnth of each segment. The "exp" version uses a exponential ramp; the other version is linear.
     
     Segment durations are specified as a fraction of the total duration and should add up to 1. `i_dur1` is the relative legnth of the rise, `i_dur2` is the relative length of the sustain, and `i_dur3` is he relative length of the fall. For example, use `i_dur1=0.5`, `i_dur2=0.3` and `i_dur3=0.2` for a long rise, shorter sustain, and even shorter fall.
 
