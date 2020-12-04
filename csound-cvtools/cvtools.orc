@@ -24,6 +24,21 @@ instr +_ramp
     outch(ichn, line:a(ibeg, idur, iend))
 endin
 
+instr +_exp_ramp
+    idur = p3
+    ichn = p4
+    ibeg = p5
+    iend = p6
+
+    if ibeg == 0 then
+        ibeg = 0.001
+    endif
+    if iend == 0 then
+        iend = 0.001
+    endif
+    outch(ichn, expon:a(ibeg, idur, iend))
+endin
+
 instr +_ar_env_eq
     idur  = p3
     ichn  = p4
@@ -33,6 +48,26 @@ instr +_ar_env_eq
     iend  = p7
     
     outch(ichn, linseg:a(ibeg, idur*0.5, imid, idur*0.5, iend))
+endin
+
+instr +_ar_exp_env_eq
+    idur  = p3
+    ichn  = p4
+
+    ibeg  = p5
+    imid  = p6
+    iend  = p7
+    
+    if ibeg == 0 then
+        ibeg = 0.001
+    endif
+    if imid == 0 then
+        imid = 0.001
+    endif
+    if iend == 0 then
+        iend = 0.001
+    endif
+    outch(ichn, expseg:a(ibeg, idur*0.5, imid, idur*0.5, iend))
 endin
 
 instr +_ar_env
@@ -50,6 +85,27 @@ instr +_ar_env
     outch(ichn, linseg:a(ibeg, idur*idur1, imid, idur*idur2, iend))
 endin
 
+instr +_ar_exp_env
+    idur  = p3
+    ichn  = p4
+
+    ibeg  = p5
+    idur1 = p6
+    
+    imid  = p7
+    idur2 = p8
+    
+    iend  = p9
+    
+    if ibeg == 0 then
+        ibeg = 0.001
+    endif
+    if iend == 0 then
+        iend = 0.001
+    endif
+    outch(ichn, expseg:a(ibeg, idur*idur1, imid, idur*idur2, iend))
+endin
+
 instr +_asr_env
     idur  = p3
     ichn  = p4
@@ -63,6 +119,31 @@ instr +_asr_env
     idur3 = p9
     iend  = p10
     outch(ichn, linseg:a(ibeg, idur*idur1, imid, idur*idur2, imid, idur*idur3, iend))
+endin
+
+instr +_asr_exp_env
+    idur  = p3
+    ichn  = p4
+
+    ibeg  = p5
+    idur1 = p6
+    
+    imid  = p7
+    idur2 = p8
+    
+    idur3 = p9
+    iend  = p10
+
+    if ibeg == 0 then
+        ibeg = 0.001
+    endif
+    if imid == 0 then
+        imid = 0.001
+    endif
+    if iend == 0 then
+        iend = 0.001
+    endif
+    outch(ichn, expseg:a(ibeg, idur*idur1, imid, idur*idur2, imid, idur*idur3, iend))
 endin
 
 ;;;;; Triggers & gates
@@ -103,6 +184,11 @@ opcode cvt_ramp, 0, kkkk
     schedulek("_ramp", 0, kdur, kchn, kbeg, kend)
 endop
 
+opcode cvt_exp_ramp, 0, iiii
+    ichn, idur, ibeg, iend xin
+    schedule("_exp_ramp", 0, idur, ichn, ibeg, iend)
+endop
+
 ;;;;; Simple envelopes
 
 ;
@@ -117,6 +203,11 @@ endop
 opcode cvt_ar_env_eq, 0, iiiii
     ichn, idur, ibeg, imid, iend xin
     schedule("_ar_env_eq", 0, idur, ichn, ibeg, imid, iend)
+endop
+
+opcode cvt_ar_exp_env_eq, 0, iiiii
+    ichn, idur, ibeg, imid, iend xin
+    schedule("_ar_exp_env_eq", 0, idur, ichn, ibeg, imid, iend)
 endop
 
 ;
@@ -135,6 +226,11 @@ opcode cvt_ar_env, 0, iiiiiii
     schedule("_ar_env", 0, idur, ichn, ibeg, idur1, imid, iend, idur2)
 endop
 
+opcode cvt_ar_exp_env, 0, iiiiiii
+    ichn, idur, ibeg, idur1, imid, iend, idur2 xin
+    schedule("_ar_exp_env", 0, idur, ichn, ibeg, idur1, imid, iend, idur2)
+endop
+
 ;
 ; attack-sustain-release
 ; args:
@@ -150,6 +246,11 @@ endop
 opcode cvt_asr_env, 0, iiiiiiii
     ichn, idur, ibeg, idur1, imid, idur2, iend, idur3 xin
     schedule("_asr_env", 0, idur, ichn, ibeg, idur1, imid, idur2, iend, idur3)
+endop
+
+opcode cvt_asr_exp_env, 0, iiiiiiii
+    ichn, idur, ibeg, idur1, imid, idur2, iend, idur3 xin
+    schedule("_asr_exp_env", 0, idur, ichn, ibeg, idur1, imid, idur2, iend, idur3)
 endop
 
 ;;;;; Simple LFOs

@@ -58,6 +58,16 @@ instr Ramp_Demo
     cvt_ramp(ichn, idur, ibeg, iend)
 endin
 
+instr Exp_Ramp_Demo
+    ichn = p4
+    idur = p5
+    ibeg = p6
+    iend = p7
+
+    timer()
+    cvt_exp_ramp(ichn, idur, ibeg, iend)
+endin
+
 instr AR_Demo_1
     ichn  = p4
     idur  = p5
@@ -103,6 +113,51 @@ instr ASR_Demo
     cvt_asr_env(ichn, idur, ibeg, idur1, imid, idur2, idur3, iend)
 endin
 
+instr AR_Exp_Demo_1
+    ichn  = p4
+    idur  = p5
+
+    ibeg  = p6
+    imid  = p7
+    iend  = p8
+
+    timer()
+    cvt_ar_exp_env_eq(ichn, idur, ibeg, imid, iend)
+endin
+
+instr AR_Exp_Demo_2
+    ichn  = p4
+    idur  = p5
+
+    ibeg  = p6
+    idur1 = p7
+    
+    imid  = p8
+    
+    iend  = p9
+    idur2 = p10
+
+    timer()
+    cvt_ar_exp_env(ichn, idur, ibeg, idur1, imid, iend, idur2)
+endin
+
+instr ASR_Exp_Demo
+    ichn  = p4
+    idur  = p5
+
+    ibeg  = p6
+    idur1 = p7
+    
+    imid  = p8
+    idur2 = p9
+    
+    idur3 = p10
+    iend  = p11
+
+    timer()
+    cvt_asr_exp_env(ichn, idur, ibeg, idur1, imid, idur2, idur3, iend)
+endin
+
 instr LFO_Demo_1
     ichn = p4
     kamp = p5
@@ -143,6 +198,13 @@ i "ASR_Demo"         65  1      2 10  0 0.3 0.6 0.4 0.3 0
 
 i "LFO_Demo_1"       80 10      2 0.3 0.5  0   ; bipolar sine
 i "LFO_Demo_2"       95 10      2 0.3 0.25 1   ; unipolar triangle
+
+i "Exp_Ramp_Demo"   107  1      2 10  0 0.5
+i "Exp_Ramp_Demo"   118  1      2 10  0.5 0
+
+i "AR_Exp_Demo_1"   130  1      2 10  0 0.5 0
+i "AR_Exp_Demo_2"   141  1      2 10  0 0.5 0.6 0.3 0
+i "ASR_Exp_Demo"    152  1      2 10  0 0.3 0.6 0.4 0.3 0
 
 e
 </CsScore>
