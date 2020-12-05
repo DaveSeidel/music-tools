@@ -9,8 +9,8 @@ However, for typical CV usage, it's more useful to stay with the range -5V to 5V
 The demo program (`cvt-demo.csd`), when used to produce a sound file, which will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
 
 Dave Seidel
-11/29/2020 (initial version)
-12/5/2020 (latest update)
+ - 11/29/2020 (initial version)
+ - 12/5/2020 (latest update)
 
 ## UDOs
 
