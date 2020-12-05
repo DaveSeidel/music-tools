@@ -6,7 +6,7 @@
 #define CVT_TRIG_DUR    #0.002#
 #define CVT_IMP_VAL     #0.5#
 
-gk_gates[] init 16
+gk_cvt_gates[] init 16
 
 ;;;;; instrument definitions, used by the UDOs
 
@@ -148,26 +148,35 @@ endin
 
 ;;;;; Triggers & gates
 
-opcode cvt_trigger, 0, i
-    ichn xin
+opcode cvt_trigger, 0, ijj
+    ichn, idur, ival xin
 
-    schedule("_impulse", 0, $CVT_TRIG_DUR, ichn, $CVT_IMP_VAL)
+    if (idur == -1) then
+        idur = $CVT_TRIG_DUR
+    endif
+    if (ival == -1) then
+        ival = $CVT_IMP_VAL
+    endif
+    schedule("_impulse", 0, idur, ichn, ival)
 endop
 
-opcode cvt_gate_open, 0, ii
-    ichn, igate xin
+opcode cvt_gate_open, 0, iij
+    ichn, igate, ival xin
 
+    if (ival == -1) then
+        ival = $CVT_IMP_VAL
+    endif
     iinst = nstrnum("_impulse") + (unirand(256) * 0.001)
-    schedule(iinst, 0, -1, ichn, $CVT_IMP_VAL)
-    gk_gates[igate] = k(iinst)
+    schedule(iinst, 0, -1, ichn, ival)
+    gk_cvt_gates[igate] = k(iinst)
 endop
 
 opcode cvt_gate_close, 0, i
     igate xin
 
-    kinst = gk_gates[igate]
+    kinst = gk_cvt_gates[igate]
     turnoff2(kinst, 4+8, 0)
-    gk_gates[igate] = 0
+    gk_cvt_gates[igate] = 0
 endop
 
 ;;;;; Ramps

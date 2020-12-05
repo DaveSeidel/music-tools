@@ -6,36 +6,36 @@ On the ES-8, we have the ability to send DC voltages that range from -10V to 10V
 
 However, for typical CV usage, it's more useful to stay with the range -5V to 5V (bipolar) or 0V to 5V (unipolar). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5.
 
-The demo program (`cvt-demo.csd`), when used to produce a sound file, which will show the shapes of the emitted signals when viewed in an audio editor such as Audacity
+The demo program (`cvt-demo.csd`), when used to produce a sound file, which will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
 
 Dave Seidel
 11/29/2020 (initial version)
-12/4/2020 (latest update)
+12/5/2020 (latest update)
 
 ## UDOs
 
 ### Note on synchronous vs. asynchronous operation
 
-All of these opcodes, with the exception of the LFO, are asynchounous, in the sense that they trigger instrument instaance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
+All of these opcodes, with the exception of the LFO, are asynchounous, in the sense that they trigger a new instrument instance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
 
-The LFO opcodes are synchronous, in the sens that they run for the lifetime of the enclosing instrument instance.
+The LFO opcodes are synchronous, in the sense that they run for the lifetime of the enclosing instrument instance.
 
 ### Triggers and Gates
 
  * cvt_trigger
     ```
-    cvt_trigger(i_channel)
+    cvt_trigger(i_channel[, i_duration[, i_value]])
     ```
 
-    Emits a 5V impulse with a duration of 2 ms on the given output channel.
+    Emits a 5V impulse on the given output channel. Optionally, you can use `i_duration` to specify the duration of the impulse in seconds to override the default duration of 2ms (e.g., use `0.005` for 5ms). You can also optionally set the amplitude value of the impulse to override the default of 0.5 (5V).
 
  * cvt_gate_open
 
     ```
-    cvt_gate_open(i_channel, i_gate_id)
+    cvt_gate_open(i_channel, i_gate_id[, i_value])
     ```
 
-    Starts a 5V signal on the given output channel, using `i_gate_id` as the gate ID (this is used later to close the gate). There are 16 concurrent gates available, numbered 0-15.
+    Starts a 5V signal on the given output channel, using `i_gate_id` as the gate ID (this is used later to close the gate). There are 16 concurrent gates available, numbered 0-15. You can optionally use `i_value` to set the amplitude value of the impulse to override the default of 0.5 (5V).
 
  * cvt_gate_close
 

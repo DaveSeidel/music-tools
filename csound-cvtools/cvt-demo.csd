@@ -19,33 +19,48 @@ nchnls =  16
 
 #include "cvtools.orc"
 
-opcode timer, 0, 0
+opcode mark, 0, 0
     prints("%d: <%f>\n", p1, times())
 endop
 
 instr Trigger_Demo
     ichn = p4
-    timer()
+
+    mark()
     cvt_trigger(ichn)
+endin
+
+instr Trigger_Demo_2
+    ichn = p4
+    idur = p5
+    ival = p6
+
+    mark()
+    cvt_trigger(ichn, idur, ival)
 endin
 
 instr Gate_Open_Demo
     ichn = p4
     igate = p5
-    ktrig init 1
 
-    timer()
+    mark()
     cvt_gate_open(ichn, igate)
-    ktrig = 0
+endin
+
+instr Gate_Open_Demo_2
+    ichn = p4
+    igate = p5
+    ival = p6
+
+    mark()
+    cvt_gate_open(ichn, igate, ival)
 endin
 
 instr Gate_Close_Demo
     igate = p4
-    ktrig init 1
 
-    timer()
+    mark()
     cvt_gate_close(igate)
-    ktrig = 0
 endin
 
 instr Ramp_Demo
@@ -54,7 +69,7 @@ instr Ramp_Demo
     ibeg = p6
     iend = p7
 
-    timer()
+    mark()
     cvt_ramp(ichn, idur, ibeg, iend)
 endin
 
@@ -64,7 +79,7 @@ instr Exp_Ramp_Demo
     ibeg = p6
     iend = p7
 
-    timer()
+    mark()
     cvt_exp_ramp(ichn, idur, ibeg, iend)
 endin
 
@@ -76,7 +91,7 @@ instr AR_Demo_1
     imid  = p7
     iend  = p8
 
-    timer()
+    mark()
     cvt_ar_env_eq(ichn, idur, ibeg, imid, iend)
 endin
 
@@ -92,7 +107,7 @@ instr AR_Demo_2
     iend  = p9
     idur2 = p10
 
-    timer()
+    mark()
     cvt_ar_env(ichn, idur, ibeg, idur1, imid, iend, idur2)
 endin
 
@@ -109,7 +124,7 @@ instr ASR_Demo
     idur3 = p10
     iend  = p11
 
-    timer()
+    mark()
     cvt_asr_env(ichn, idur, ibeg, idur1, imid, idur2, idur3, iend)
 endin
 
@@ -121,7 +136,7 @@ instr AR_Exp_Demo_1
     imid  = p7
     iend  = p8
 
-    timer()
+    mark()
     cvt_ar_exp_env_eq(ichn, idur, ibeg, imid, iend)
 endin
 
@@ -137,7 +152,7 @@ instr AR_Exp_Demo_2
     iend  = p9
     idur2 = p10
 
-    timer()
+    mark()
     cvt_ar_exp_env(ichn, idur, ibeg, idur1, imid, iend, idur2)
 endin
 
@@ -154,7 +169,7 @@ instr ASR_Exp_Demo
     idur3 = p10
     iend  = p11
 
-    timer()
+    mark()
     cvt_asr_exp_env(ichn, idur, ibeg, idur1, imid, idur2, idur3, iend)
 endin
 
@@ -164,7 +179,7 @@ instr LFO_Demo_1
     kcps = p6
     itype = p7
 
-    timer()
+    mark()
     cvt_lfo(ichn, kamp, kcps, itype)
 endin
 
@@ -174,7 +189,7 @@ instr LFO_Demo_2
     kcps = p6
     itype = p7
 
-    timer()
+    mark()
     cvt_lfo_uni(ichn, kamp, kcps, itype)
 endin
 
@@ -205,6 +220,11 @@ i "Exp_Ramp_Demo"   118  1      2 10  0.5 0
 i "AR_Exp_Demo_1"   130  1      2 10  0 0.5 0
 i "AR_Exp_Demo_2"   141  1      2 10  0 0.5 0.6 0.3 0
 i "ASR_Exp_Demo"    152  1      2 10  0 0.3 0.6 0.4 0.3 0
+
+i "Trigger_Demo_2"     165  1      2 0.005 0.3
+
+i "Gate_Open_Demo_2"   168  1      2 1 0.3
+i "Gate_Close_Demo"    173  1      1
 
 e
 </CsScore>
