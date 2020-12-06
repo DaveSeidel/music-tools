@@ -6,19 +6,19 @@ On the ES-8, we have the ability to send DC voltages that range from -10V to 10V
 
 However, for typical CV usage, it's more useful to stay with the range -5V to 5V (bipolar) or 0V to 5V (unipolar). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5.
 
-The demo program (`cvt-demo.csd`), when used to produce a sound file, which will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
+The demo program (`cvt-demo.csd`), when used to produce a sound file, will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
 
-Dave Seidel
+Dave Seidel, mysterybear.net
  - 11/29/2020 (initial version)
- - 12/5/2020 (latest update)
+ - 12/6/2020 (latest update)
 
 ## UDOs
 
 ### Note on synchronous vs. asynchronous operation
 
-All of these opcodes, with the exception of the LFO, are asynchounous, in the sense that they trigger a new instrument instance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
+All of these opcodes, with the exception of the LFOs, are asynchounous, in the sense that they trigger a new instrument instance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
 
-The LFO opcodes are synchronous, in the sense that they run for the lifetime of the enclosing instrument instance.
+The LFO opcodes are synchronous: they run for the lifetime of the enclosing instrument instance.
 
 ### Triggers and Gates
 
@@ -58,6 +58,7 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
     ```
 
     Emits a ramp, specifying the duration, starting value, and ending value. The "exp" version uses a exponential ramp; the other version is linear.
+
  * cvt_ar_env_eq
  * cvt_ar_exp_env_eq
 
@@ -96,16 +97,16 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
 
  * cvt_lfo
 
- ```
- cvt_lfo(ichn, kamp, kcps, itype)
- ```
+   ```
+   cvt_lfo(ichn, kamp, kcps, itype)
+   ```
 
- Emits a bipolar LFO, with selectable shape. See the Csound `lfo` opcode for an explanation of the `kamp`, `kcps`, and `itype` paramaters.
+   Emits a bipolar LFO with selectable shape. See the Csound `lfo` opcode for an explanation of the `kamp`, `kcps`, and `itype` paramaters.
 
  * cvt_lfo_uni
 
- ```
- cvt_lfo_uni(ichn, kamp, kcps, itype)
- ```
+   ```
+   cvt_lfo_uni(ichn, kamp, kcps, itype)
+   ```
 
- Same as `cvt_lfo` but unipolar (positive only).
+   Same as `cvt_lfo` but unipolar (positive only).

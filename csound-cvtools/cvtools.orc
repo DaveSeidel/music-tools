@@ -1,6 +1,6 @@
 ;===============================================================================
 ; Csound CV Tools
-; Dave Seidel, 11/29/2020 (initial release)
+; Dave Seidel, 12/6/2020
 ;===============================================================================
 
 #define CVT_TRIG_DUR    #0.002#
@@ -193,14 +193,20 @@ opcode cvt_ramp, 0, kkkk
     schedulek("_ramp", 0, kdur, kchn, kbeg, kend)
 endop
 
+; i-rate version
 opcode cvt_exp_ramp, 0, iiii
     ichn, idur, ibeg, iend xin
     schedule("_exp_ramp", 0, idur, ichn, ibeg, iend)
 endop
 
+; k-rate version
+opcode cvt_exp_ramp, 0, kkkk
+    kchn, kdur, kbeg, kend xin
+    schedulek("_exp_ramp", 0, kdur, kchn, kbeg, kend)
+endop
+
 ;;;;; Simple envelopes
 
-;
 ; attack-release envelope (equal rise/fall)
 ; args:
 ; - output channel
@@ -219,7 +225,6 @@ opcode cvt_ar_exp_env_eq, 0, iiiii
     schedule("_ar_exp_env_eq", 0, idur, ichn, ibeg, imid, iend)
 endop
 
-;
 ; attack-release envelope (adjustable rise/fall)
 ; args:
 ; - output channel
@@ -240,7 +245,6 @@ opcode cvt_ar_exp_env, 0, iiiiiii
     schedule("_ar_exp_env", 0, idur, ichn, ibeg, idur1, imid, iend, idur2)
 endop
 
-;
 ; attack-sustain-release
 ; args:
 ; - output channel
