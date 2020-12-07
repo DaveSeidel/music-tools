@@ -1,6 +1,6 @@
 ;===============================================================================
-; Csound CV Tools
-; Dave Seidel, 11/29/2020 (initial release)
+; Csound CV Tools demos
+; Dave Seidel, 12/6/2020
 ;===============================================================================
 
 <CsoundSynthesizer>
@@ -11,7 +11,7 @@
 
 <CsInstruments>
 
-sr = 96000
+sr = 48000
 ksmps = 32
 nchnls =  16
 ; nchnls_i = 8
@@ -20,7 +20,7 @@ nchnls =  16
 #include "cvtools.orc"
 
 opcode mark, 0, 0
-    prints("%d: <%f>\n", p1, times())
+    prints("i %02d @ %3.3f\n", p1, times())
 endop
 
 instr Trigger_Demo
@@ -225,6 +225,10 @@ i "Trigger_Demo_2"     165  1      2 0.005 0.3
 
 i "Gate_Open_Demo_2"   168  1      2 1 0.3
 i "Gate_Close_Demo"    173  1      1
+
+; #define CYCLE #299#
+; i "Exp_Ramp_Demo"  0        1    2 $CYCLE  0.5 0
+; i "Ramp_Demo"      ^+$CYCLE 1    2 $CYCLE  0.5 0
 
 e
 </CsScore>
