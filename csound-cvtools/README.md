@@ -4,13 +4,14 @@ Convenience functions for use with DC-coupled audio interfaces, such as the Expe
 
 On the ES-8, we have the ability to send DC voltages that range from -10V to 10V (20V peak to peak). From the Csound perspective, these correspond to output values of -1 to 1 (or, more safely, -0.99999 to 0.99999). A Csound output unit of 0.1 corresponds to 1V.
 
-However, for typical CV usage, it's more useful to stay with the range -5V to 5V (bipolar) or 0V to 5V (unipolar). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5.
+However, for typical non-pitch CV usage, it's more useful to stay with the range -5V to 5V (bipolar) or 0V to 5V (unipolar). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5. Pitch voltages may cover a wider ranger, depending on the device(s) to which you intend to send the pitch.
 
 The demo program (`cvt-demo.csd`), when used to produce a sound file, will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
 
 Dave Seidel, mysterybear.net
- - 11/29/2020 (initial version)
- - 12/6/2020 (latest update)
+ - 11/29/2020 - initial version
+ - 12/6/2020 - first update
+ - 12/21/2020 - v1.0
 
 ## UDOs
 
@@ -110,3 +111,60 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
    ```
 
    Same as `cvt_lfo` but unipolar (positive only).
+
+### Tuning
+
+ * cvt_f2p
+   ```
+   ipitch = cvt_f2p(440)
+   ```
+
+   Given a frequency value (in Hz), returns a suitable pitch voltage value.
+
+ * cvt_pitch
+   ```
+   cvt_pitch(ichn, idur, ipitch)
+   ```
+
+   Given an output channel, a duration, and a pitch value, emits a pitch voltage for the specified duration.
+
+ * cvt_ft2pt
+   ```
+   ; GEN51 tuning table
+   ituning_table = ftgen(0, 0, 128, -51, 12, 2, cpsoct(8), 60, ...)
+
+   ; table to hold pitch voltages
+   ipitch_table = ftgen(0, 0, -128, -2, 0, 0)
+   
+   ; populate pitch table
+   cvt_ft2pt(ituning_table, ipitch_table)
+   ```
+
+   Given a GEN51 tuning table and an empty table of the same size, populates the ermpty table with ptch voltage values that correspond to the frequencies in the tuning table.
+
+## Tuner Utility
+
+We include a utility program called `tuner.csd` that emits two signals: an audio signal at a specified pitch, and a CV signal at a correspsonding pitch voltage. You can use this to tune any oscillator with a 1v/oct input by ear.
+
+To make it easier to use, we also include a Linux shell script called `tuner.sh`.
+
+
+```
+Usage: tuner [-f FREQ] [-n NOTE] [-t TUNING] [-c CV_OUTPUT_CHANNEL]
+```
+Where:
+ * FREQ is a frequency value in Hz
+ * NOTE is a MIDI note number (e.g., 69 for A440, which is the default)
+ * TUNING is either 1 for standard 12-TET tuning (the default) or 2 for the Grady Centaur just intonation tuning
+ * CV_OUTPUT_CHANNEL is the output channel on your audio interface when you wwant to emit the pitch voltage (default: 7)
+
+Running with no arguments is equivalent to executing
+```
+./tuner.sh -n 69 -t 1 -c 7
+```
+which emits a 440 Hz tone on output channel 1 and an equivalent pitch voltage on output channel 7.
+
+### Notes
+ * If you use the `-c` to specify a pitch by frequency (e.g., 440), the `-n` and `-t` options are ignored.
+ * The files `tuner.csd` and `tuner.sh` must be in the same directory, and Csound must be on the path.
+ * I intend to eventually provide a Windows command file that's equivalent in function to `tuner.sh`.

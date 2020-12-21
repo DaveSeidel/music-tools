@@ -1,12 +1,13 @@
 ;===============================================================================
-; Csound CV Tools demos
-; Dave Seidel, 12/6/2020
+; Csound CV Tools demo
+; Dave Seidel
+; v1.0 2020-12-21
 ;===============================================================================
 
 <CsoundSynthesizer>
 <CsOptions>
 ; ES-8
---format=long -odac:hw:1,0 -m4
+--format=long -odac:hw:1,0 -m4 -d
 </CsOptions>
 
 <CsInstruments>

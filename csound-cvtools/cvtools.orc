@@ -1,14 +1,31 @@
 ;===============================================================================
 ; Csound CV Tools
-; Dave Seidel, 12/6/2020
+; Dave Seidel
+; v1.0 2020-12-21
 ;===============================================================================
 
-#define CVT_TRIG_DUR    #0.002#
-#define CVT_IMP_VAL     #0.5#
+; Voltage scaling
+#define CVT_SCALING_FACTOR  #0.1#
 
+; 2ms trigger
+#define CVT_TRIG_DUR    #0.002#
+
+; 5V impulse
+#define CVT_IMP_VAL     #5 * $CVT_SCALING_FACTOR#
+
+; gate IDs
 gk_cvt_gates[] init 16
 
-;;;;; instrument definitions, used by the UDOs
+; tuning
+; oct value 4.0 => C0 (MIDI note 12)
+#ifndef CVT_TUNING_BASE
+#define CVT_TUNING_BASE #4.0#
+#endif
+gi_cvt_f0 = cpsoct($CVT_TUNING_BASE)
+
+;
+; instrument definitions, used by the UDOs
+;
 
 instr +_impulse
     ichn = p4
@@ -146,6 +163,10 @@ instr +_asr_exp_env
     outch(ichn, expseg:a(ibeg, idur*idur1, imid, idur*idur2, imid, idur*idur3, iend))
 endin
 
+;
+; UDOs
+;
+
 ;;;;; Triggers & gates
 
 opcode cvt_trigger, 0, ijj
@@ -168,6 +189,17 @@ opcode cvt_gate_open, 0, iij
     endif
     iinst = nstrnum("_impulse") + (unirand(256) * 0.001)
     schedule(iinst, 0, -1, ichn, ival)
+    gk_cvt_gates[igate] = k(iinst)
+endop
+
+opcode cvt_gate_open, 0, iiJ
+    ichn, igate, kval xin
+
+    if (kval == -1) then
+        kval = $CVT_IMP_VAL
+    endif
+    iinst = nstrnum("_impulse") + (unirand(256) * 0.001)
+    schedule(iinst, 0, -1, ichn, kval)
     gk_cvt_gates[igate] = k(iinst)
 endop
 
@@ -278,4 +310,85 @@ endop
 opcode cvt_lfo_uni, 0, ikki
     ichn, kamp, kcps, itype xin
     outch(ichn, lfo:a(kamp, kcps, itype) + a(kamp))
+endop
+
+;;;;; Pitch
+
+
+; Given a GEN51 tuning table (or any table), returns the zeroth element.
+; Intended mostly for internal use.
+opcode _cvt_v0, i, i
+    itab xin
+    izero = table(0, itab)
+    xout izero
+endop
+
+opcode _cvt_v0, k, k
+    ktab xin
+    kzero = tablekt(0, ktab)
+    xout kzero
+endop
+
+; Given a frequency and a zero frequency (i.e., frequency at 0 VDC),
+; return a pitch voltage value.
+; Intended mostly for internal use.
+; args:
+;  - kfreq (frequency)
+;  - kzero (frequency at 0 VDC)
+; returns:
+;  - pitch voltage
+opcode _cvt_f2p, i, ii
+    ifreq, izero xin
+    xout log2(ifreq / izero) * $CVT_SCALING_FACTOR
+endop
+
+opcode _cvt_f2p, k, kk
+    kfreq, kzero xin
+    xout log2(kfreq / kzero) * $CVT_SCALING_FACTOR
+endop
+
+; Given a frequency, return a pitch voltage value.
+; args:
+;  - kfreq (frequency)
+; returns:
+;  - pitch voltage
+opcode cvt_f2p, i, i
+    ifreq xin
+    xout log2(ifreq / gi_cvt_f0) * 0.1
+endop
+
+opcode cvt_f2p, k, k
+    kfreq xin
+    xout log2(kfreq / gi_cvt_f0) * 0.1
+endop
+
+; Given a GEN51 tuning table, ppopulate another table with corresponding pitch voltages.
+; The desination table is assumed to be the same size as the tuning table.
+; args:
+;  - kintab (input table, GEN51)
+;  - kouttab (output tabel, mustbe same size of input table)
+; returns:
+;  - nothing
+opcode cvt_ft2pt, 0, ii
+    iintab, iouttab xin
+    indx init 0
+    ilen = tableng(iintab)
+
+    until indx == ilen do
+        iorig = table(indx, iintab)
+        ipch = cvt_f2p(iorig)
+        tablew(ipch, indx, iouttab)
+        indx += 1
+    od
+endop
+
+; Outputs a pitch voltage.
+; args:
+;  - ichn (output channel)
+;  - kval (pitch voltage value) 
+; returns:
+;  - nothing
+opcode cvt_pitch, 0, iii
+    ichn, idur, ival xin
+    schedule("_impulse", 0, idur, ichn, ival)
 endop
