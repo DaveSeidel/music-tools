@@ -140,7 +140,7 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
    cvt_ft2pt(ituning_table, ipitch_table)
    ```
 
-   Given a GEN51 tuning table and an empty table of the same size, populates the ermpty table with ptch voltage values that correspond to the frequencies in the tuning table.
+   Given a GEN51 tuning table and an empty table of the same size, populates the empty table with pitch voltages that correspond to the frequencies in the tuning table.
 
 ## Tuner Utility
 
@@ -165,7 +165,7 @@ Running with no arguments is equivalent to executing
 which emits a 440 Hz tone on output channel 1 and an equivalent pitch voltage on output channel 7.
 
 ### Notes
- * If you use the `-c` to specify a pitch by frequency (e.g., 440), the `-n` and `-t` options are ignored.
+ * If you use `-c` to specify a pitch by frequency (e.g., 440), the `-n` and `-t` options are ignored.
  * The files `tuner.csd` and `tuner.sh` must be in the same directory, and Csound must be on the path.
- * The utility assumes that you are using an Expert Sleepers ES-8 audio interface, and that it's assigned to ALSA device `hw:1,0`. If you're using a different DC-coupled audio interface, or using something other than ALSA, you will need to modify `tuner.csd` to suit your environment.
+ * The utility assumes that you are using an Expert Sleepers ES-8 audio interface, and that it's assigned to ALSA device `hw:1,0`. If you're using a different DC-coupled audio interface and/or using something other than ALSA, you will need to modify `tuner.csd` to suit your environment.
  * I intend to eventually provide a Windows command file that's equivalent in function to `tuner.sh`.
