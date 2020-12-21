@@ -333,8 +333,8 @@ endop
 ; return a pitch voltage value.
 ; Intended mostly for internal use.
 ; args:
-;  - kfreq (frequency)
-;  - kzero (frequency at 0 VDC)
+;  - i/kfreq (frequency)
+;  - i/kzero (frequency at 0 VDC)
 ; returns:
 ;  - pitch voltage
 opcode _cvt_f2p, i, ii
@@ -349,7 +349,7 @@ endop
 
 ; Given a frequency, return a pitch voltage value.
 ; args:
-;  - kfreq (frequency)
+;  - i/kfreq (frequency)
 ; returns:
 ;  - pitch voltage
 opcode cvt_f2p, i, i
@@ -365,8 +365,8 @@ endop
 ; Given a GEN51 tuning table, ppopulate another table with corresponding pitch voltages.
 ; The desination table is assumed to be the same size as the tuning table.
 ; args:
-;  - kintab (input table, GEN51)
-;  - kouttab (output tabel, mustbe same size of input table)
+;  - iintab (input table, GEN51)
+;  - iouttab (output tabel, must be same size as input table)
 ; returns:
 ;  - nothing
 opcode cvt_ft2pt, 0, ii
@@ -385,7 +385,7 @@ endop
 ; Outputs a pitch voltage.
 ; args:
 ;  - ichn (output channel)
-;  - kval (pitch voltage value) 
+;  - ival (pitch voltage value) 
 ; returns:
 ;  - nothing
 opcode cvt_pitch, 0, iii
