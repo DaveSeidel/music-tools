@@ -1,10 +1,10 @@
 # Csound CV Tools
 
-Convenience functions for use with DC-coupled audio interfaces, such as the Expert Sleepers ES-8, to generate control signals for modular synths (or other such hardware).
+Convenience functions for use with DC-coupled audio interfaces, such as the Expert Sleepers ES-8, to generate control signals for modular synths (or other such hardware). The ES-8 is the only hardware I've tested and use this code on.
 
-On the ES-8, we have the ability to send DC voltages that range from -10V to 10V (20V peak to peak). From the Csound perspective, these correspond to output values of -1 to 1 (or, more safely, -0.99999 to 0.99999). A Csound output unit of 0.1 corresponds to 1V.
+The ES-8 can send DC voltages that range from -10V to 10V (20V peak to peak). From the Csound perspective, these correspond to output values of -1 to 1. A Csound output unit of 0.1 corresponds to 1V; thus, 0.5 equals 5V, etc.
 
-However, for typical non-pitch CV usage, it's more useful to stay with the range -5V to 5V (bipolar) or 0V to 5V (unipolar). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5. Pitch voltages may cover a wider ranger, depending on the device(s) to which you intend to send the pitch.
+For typical non-pitch CV usage, it's usually best to stay within the range -5V to 5V (bipolar) or 0V to 5V (unipolar), because most modular hardware is designed to those specs. (Moogerfoogers use 0-5V; some pedals accept 0-3V). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5. Pitch voltages can cover a wider ranger, depending on the device(s) to which you intend to send the pitch.
 
 The demo program (`cvt-demo.csd`), when used to produce a sound file, will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
 
@@ -113,6 +113,8 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
    Same as `cvt_lfo` but unipolar (positive only).
 
 ### Tuning
+
+Pitch voltages are unpolar positive.
 
  * cvt_f2p
    ```
