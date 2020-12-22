@@ -362,7 +362,19 @@ opcode cvt_f2p, k, k
     xout log2(kfreq / gi_cvt_f0) * 0.1
 endop
 
-; Given a GEN51 tuning table, ppopulate another table with corresponding pitch voltages.
+; Given a tuning table and an index, return a pitch voltage value.
+; args:
+;  - itab (table)
+;  - indx (table index of frequency)
+; returns:
+;  - pitch voltage
+opcode cvt_ft2p, i, ii
+    itab, indx xin
+    ifreq = table(indx, itab)
+    xout log2(ifreq / gi_cvt_f0) * 0.1
+endop
+
+; Given a GEN51 tuning table, populate another table with corresponding pitch voltages.
 ; The desination table is assumed to be the same size as the tuning table.
 ; args:
 ;  - iintab (input table, GEN51)

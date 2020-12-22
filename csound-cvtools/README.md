@@ -116,6 +116,13 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
 
 Pitch voltages are unpolar positive.
 
+ * cvt_pitch
+   ```
+   cvt_pitch(ichn, idur, ipitch)
+   ```
+
+   Given an output channel, a duration, and a pitch value, emits a pitch voltage for the specified duration.
+
  * cvt_f2p
    ```
    ipitch = cvt_f2p(440)
@@ -123,12 +130,12 @@ Pitch voltages are unpolar positive.
 
    Given a frequency value (in Hz), returns a suitable pitch voltage value.
 
- * cvt_pitch
+ * cvt_ft2p
    ```
-   cvt_pitch(ichn, idur, ipitch)
+   ipitch = cvt_ft2p(ituning_table, indx)
    ```
 
-   Given an output channel, a duration, and a pitch value, emits a pitch voltage for the specified duration.
+   Given a tuning table and an index, return a pitch voltage value.
 
  * cvt_ft2pt
    ```
