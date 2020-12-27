@@ -4,7 +4,12 @@
 ; v1.0 2020-12-21
 ;===============================================================================
 
-; Voltage scaling
+
+;-------------------------------------------------------------------------------
+; macros
+;-------------------------------------------------------------------------------
+
+; voltage scaling
 #define CVT_SCALING_FACTOR  #0.1#
 
 ; 2ms trigger
@@ -16,16 +21,21 @@
 ; gate IDs
 gk_cvt_gates[] init 16
 
-; tuning
+; tuning base / freq0
 ; oct value 4.0 => C0 (MIDI note 12)
 #ifndef CVT_TUNING_BASE
 #define CVT_TUNING_BASE #4.0#
 #endif
 gi_cvt_f0 = cpsoct($CVT_TUNING_BASE)
 
-;
+
+; frequency-to-pitch-voltage conversion 
+#define CVT_F2P(FREQ)  #log2($FREQ / gi_cvt_f0) * $CVT_SCALING_FACTOR#
+
+
+;-------------------------------------------------------------------------------
 ; instrument definitions, used by the UDOs
-;
+;-------------------------------------------------------------------------------
 
 instr +_impulse
     ichn = p4
@@ -163,9 +173,10 @@ instr +_asr_exp_env
     outch(ichn, expseg:a(ibeg, idur*idur1, imid, idur*idur2, imid, idur*idur3, iend))
 endin
 
-;
+
+;-------------------------------------------------------------------------------
 ; UDOs
-;
+;-------------------------------------------------------------------------------
 
 ;;;;; Triggers & gates
 
@@ -314,39 +325,6 @@ endop
 
 ;;;;; Pitch
 
-
-; Given a GEN51 tuning table (or any table), returns the zeroth element.
-; Intended mostly for internal use.
-opcode _cvt_v0, i, i
-    itab xin
-    izero = table(0, itab)
-    xout izero
-endop
-
-opcode _cvt_v0, k, k
-    ktab xin
-    kzero = tablekt(0, ktab)
-    xout kzero
-endop
-
-; Given a frequency and a zero frequency (i.e., frequency at 0 VDC),
-; return a pitch voltage value.
-; Intended mostly for internal use.
-; args:
-;  - i/kfreq (frequency)
-;  - i/kzero (frequency at 0 VDC)
-; returns:
-;  - pitch voltage
-opcode _cvt_f2p, i, ii
-    ifreq, izero xin
-    xout log2(ifreq / izero) * $CVT_SCALING_FACTOR
-endop
-
-opcode _cvt_f2p, k, kk
-    kfreq, kzero xin
-    xout log2(kfreq / kzero) * $CVT_SCALING_FACTOR
-endop
-
 ; Given a frequency, return a pitch voltage value.
 ; args:
 ;  - i/kfreq (frequency)
@@ -354,12 +332,14 @@ endop
 ;  - pitch voltage
 opcode cvt_f2p, i, i
     ifreq xin
-    xout log2(ifreq / gi_cvt_f0) * 0.1
+    ; xout log2(ifreq / gi_cvt_f0) * $CVT_SCALING_FACTOR
+    xout $CVT_F2P(ifreq)
 endop
 
 opcode cvt_f2p, k, k
     kfreq xin
-    xout log2(kfreq / gi_cvt_f0) * 0.1
+    ; xout log2(kfreq / gi_cvt_f0) * $CVT_SCALING_FACTOR
+    xout $CVT_F2P(kfreq)
 endop
 
 ; Given a tuning table and an index, return a pitch voltage value.
@@ -369,9 +349,11 @@ endop
 ; returns:
 ;  - pitch voltage
 opcode cvt_ft2p, i, ii
-    itab, indx xin
+    indx, itab xin
     ifreq = table(indx, itab)
-    xout log2(ifreq / gi_cvt_f0) * 0.1
+    ipv = $CVT_F2P(ifreq)
+    ; ipv = log2(ifreq / gi_cvt_f0) * $CVT_SCALING_FACTOR
+    xout ipv
 endop
 
 ; Given a GEN51 tuning table, populate another table with corresponding pitch voltages.
@@ -388,8 +370,8 @@ opcode cvt_ft2pt, 0, ii
 
     until indx == ilen do
         iorig = table(indx, iintab)
-        ipch = cvt_f2p(iorig)
-        tablew(ipch, indx, iouttab)
+        ipv = $CVT_F2P(iorig)
+        tablew(ipv, indx, iouttab)
         indx += 1
     od
 endop
