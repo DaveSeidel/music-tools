@@ -17,7 +17,7 @@ Dave Seidel, mysterybear.net
 
 ### Note on synchronous vs. asynchronous operation
 
-All of these opcodes, with the exception of the LFOs, are asynchounous, in the sense that they trigger a new instrument instance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
+All of these opcodes, with the exception of the LFOs, are asynchonous, in the sense that they trigger a new instrument instance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
 
 The LFO opcodes are synchronous: they run for the lifetime of the enclosing instrument instance.
 
