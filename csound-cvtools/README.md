@@ -109,3 +109,36 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
  ```
 
  Same as `cvt_lfo` but unipolar (positive only).
+
+### Pitch
+
+* cvt_f2p
+```
+cvt_f2p(ifreq)
+cvt_f2p(kfreq)
+```
+
+Given a frequency, returns a pitch voltage value.
+
+* cvt_ft2p
+
+```
+cvt_ft2p(itab, indx)
+```
+
+Given a tuning table and an index, returns a pitch voltage value.
+
+* cvt_ft2pt
+```
+cvt_ft2pt(iintab, iouttab)
+```
+
+Given a GEN51 tuning table, populates another table with corresponding pitch voltages.
+The desination table is assumed to be the same size as the tuning table.
+
+* cvt_pitch
+```
+cvt_pitch(ichn, idir. ival)
+```
+
+Given an output channel, a duration, and a pitch voltage value, outputs a pitch voltage.
