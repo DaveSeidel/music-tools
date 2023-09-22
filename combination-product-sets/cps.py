@@ -287,7 +287,7 @@ class CPS(object):
                 for elm in self._cps
             }
 
-            # list of reletive indexes
+            # list of relative indexes
             self._relative_index = [self._relative_map[str(elm.factors)] for elm in self._cps]
 
         # map factors to index values

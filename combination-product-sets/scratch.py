@@ -11,7 +11,7 @@ eiko_factors = (1, 3, 5, 7, 11, 13)
 eikosany = CPS(eiko_factors, name="1-3-5-7-11-13 Eikosany")
 
 # do stuff with it
-# print_cps(eikosany)
+print_cps(eikosany)
 # print_cps_transpositions(eikosany, eiko_factors)
 
 # print_hexanies(eikosany, (1*3*5, "1*3*5"))
@@ -84,16 +84,16 @@ eikosany = CPS(eiko_factors, name="1-3-5-7-11-13 Eikosany")
 #     index = [f"{i:>3}" for i in dek.relative_index]
 #     print(f"{dek.name:<19}\t[{','.join(index)} ]")
 
-hexanies = transpose_and_spawn(eikosany, (1*3*5, "1*3*5"), 4, 2)
+# hexanies = transpose_and_spawn(eikosany, (1*3*5, "1*3*5"), 4, 2)
 
-print("\n===== by ratios =====\n")
-srtd = sorted(hexanies, key=lambda cps: cps.ratios)
-for s in srtd:
-    print(f"{s.name:<19}\t{s.list_scale(tabular=True)}")
+# print("\n===== by ratios =====\n")
+# srtd = sorted(hexanies, key=lambda cps: cps.ratios)
+# for s in srtd:
+#     print(f"{s.name:<19}\t{s.list_scale(tabular=True)}")
 
-print()
-for s in srtd:
-    print(f"{s.name_csv},{s.list_scale(tabular=True, csv=True)}")
+# print()
+# for s in srtd:
+#     print(f"{s.name_csv},{s.list_scale(tabular=True, csv=True)}")
 
 # for i, s in enumerate(srtd):
 #     # print(f"; {s.name}")
