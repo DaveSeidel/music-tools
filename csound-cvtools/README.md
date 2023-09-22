@@ -1,24 +1,25 @@
 # Csound CV Tools
 
-Convenience functions for use with DC-coupled audio interfaces, such as the Expert Sleepers ES-8, to generate control signals for modular synths (or other such hardware).
+Convenience functions for use with DC-coupled audio interfaces, such as the Expert Sleepers ES-8, to generate control signals for modular synths (or other such hardware). The ES-8 is the only hardware I've tested and use this code on.
 
-On the ES-8, we have the ability to send DC voltages that range from -10V to 10V (20V peak to peak). From the Csound perspective, these correspond to output values of -1 to 1 (or, more safely, -0.99999 to 0.99999). A Csound output unit of 0.1 corresponds to 1V.
+The ES-8 can send DC voltages that range from -10V to 10V (20V peak to peak). From the Csound perspective, these correspond to output values of -1 to 1. A Csound output unit of 0.1 corresponds to 1V; thus, 0.5 equals 5V, etc.
 
-However, for typical CV usage, it's more useful to stay with the range -5V to 5V (bipolar) or 0V to 5V (unipolar). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5.
+For typical non-pitch CV usage, it's usually best to stay within the range -5V to 5V (bipolar) or 0V to 5V (unipolar), because most modular hardware is designed to those specs. (Moogerfoogers use 0-5V; some pedals accept 0-3V). These ranges correspond to Csound outputs of -0.5 to 0.5, or 0 to 0.5. Pitch voltages can cover a wider ranger, depending on the device(s) to which you intend to send the pitch.
 
-The demo program (`cvt-demo.csd`), when used to produce a sound file, which will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
+The demo program (`cvt-demo.csd`), when used to produce a sound file, will show the shapes of the emitted signals when viewed in an audio editor such as Audacity.
 
-Dave Seidel
- - 11/29/2020 (initial version)
- - 12/5/2020 (latest update)
+Dave Seidel, mysterybear.net
+ - 11/29/2020 - initial version
+ - 12/6/2020 - first update
+ - 12/21/2020 - v1.0
 
 ## UDOs
 
 ### Note on synchronous vs. asynchronous operation
 
-All of these opcodes, with the exception of the LFO, are asynchounous, in the sense that they trigger a new instrument instance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
+All of these opcodes, with the exception of the LFOs, are asynchonous, in the sense that they trigger new instruments instance that will run on their own for the specifed overall duration, regardless of the duration of the instrument from which they were launched.
 
-The LFO opcodes are synchronous, in the sense that they run for the lifetime of the enclosing instrument instance.
+The LFO opcodes are synchronous: they run for the lifetime of the enclosing instrument instance.
 
 ### Triggers and Gates
 
@@ -58,6 +59,7 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
     ```
 
     Emits a ramp, specifying the duration, starting value, and ending value. The "exp" version uses a exponential ramp; the other version is linear.
+
  * cvt_ar_env_eq
  * cvt_ar_exp_env_eq
 
@@ -96,49 +98,83 @@ Acceptable range for start/middle/end values: -0.99999 to 0.99999; recommended r
 
  * cvt_lfo
 
- ```
- cvt_lfo(ichn, kamp, kcps, itype)
- ```
+   ```
+   cvt_lfo(ichn, kamp, kcps, itype)
+   ```
 
- Emits a bipolar LFO, with selectable shape. See the Csound `lfo` opcode for an explanation of the `kamp`, `kcps`, and `itype` paramaters.
+   Emits a bipolar LFO with selectable shape. See the Csound `lfo` opcode for an explanation of the `kamp`, `kcps`, and `itype` paramaters.
 
  * cvt_lfo_uni
 
- ```
- cvt_lfo_uni(ichn, kamp, kcps, itype)
- ```
+   ```
+   cvt_lfo_uni(ichn, kamp, kcps, itype)
+   ```
 
- Same as `cvt_lfo` but unipolar (positive only).
+   Same as `cvt_lfo` but unipolar (positive only).
 
-### Pitch
+### Tuning
 
-* cvt_f2p
+Pitch voltages are unpolar positive.
+
+ * cvt_pitch
+   ```
+   cvt_pitch(ichn, idur, ipitch)
+   ```
+
+   Given an output channel, a duration, and a pitch value, emits a pitch voltage for the specified duration.
+
+ * cvt_f2p
+   ```
+   ipitch = cvt_f2p(440)
+   ```
+
+   Given a frequency value (in Hz), returns a suitable pitch voltage value.
+
+ * cvt_ft2p
+   ```
+   ipitch = cvt_ft2p(ituning_table, indx)
+   ```
+
+   Given a tuning table and an index, return a pitch voltage value.
+
+ * cvt_ft2pt
+   ```
+   ; GEN51 tuning table
+   ituning_table = ftgen(0, 0, 128, -51, 12, 2, cpsoct(8), 60, ...)
+
+   ; table to hold pitch voltages
+   ipitch_table = ftgen(0, 0, -128, -2, 0, 0)
+   
+   ; populate pitch table
+   cvt_ft2pt(ituning_table, ipitch_table)
+   ```
+
+   Given a GEN51 tuning table and an empty table of the same size, populates the empty table with pitch voltages that correspond to the frequencies in the tuning table.
+
+## Tuner Utility
+
+We include a utility program called `tuner.csd` that emits two signals: an audio signal at a specified pitch, and a CV signal at a correspsonding pitch voltage. You can use this to tune any oscillator with a 1v/oct input by ear.
+
+To make it easier to use, we also include a Linux shell script called `tuner.sh`.
+
+
 ```
-cvt_f2p(ifreq)
-cvt_f2p(kfreq)
+Usage: tuner [-f FREQ] [-n NOTE] [-t TUNING] [-c CV_OUTPUT_CHANNEL]
 ```
+Where:
+ * FREQ is a frequency value in Hz
+ * NOTE is a MIDI note number (e.g., 69 for A440, which is the default)
+ * TUNING is either 1 for standard 12-TET tuning (the default) or 2 for the Grady Centaur just intonation tuning
+ * CV_OUTPUT_CHANNEL is the output channel on your audio interface when you wwant to emit the pitch voltage (default: 7)
 
-Given a frequency, returns a pitch voltage value.
-
-* cvt_ft2p
-
+Running with no arguments is equivalent to executing
 ```
-cvt_ft2p(itab, indx)
+./tuner.sh -n 69 -t 1 -c 7
 ```
+which emits a 440 Hz tone on output channel 1 and an equivalent pitch voltage on output channel 7.
 
-Given a tuning table and an index, returns a pitch voltage value.
-
-* cvt_ft2pt
-```
-cvt_ft2pt(iintab, iouttab)
-```
-
-Given a GEN51 tuning table, populates another table with corresponding pitch voltages.
-The desination table is assumed to be the same size as the tuning table.
-
-* cvt_pitch
-```
-cvt_pitch(ichn, idir. ival)
-```
-
-Given an output channel, a duration, and a pitch voltage value, outputs a pitch voltage.
+### Notes
+ * If you use `-c` to specify a pitch by frequency (e.g., 440), the `-n` and `-t` options are ignored.
+ * The files `tuner.csd` and `tuner.sh` must be in the same directory, and Csound must be on the path.
+ * The utility assumes that you are using an Expert Sleepers ES-8 audio interface, and that it's assigned to ALSA device `hw:1,0`. If you're using a different DC-coupled audio interface and/or using something other than ALSA, you will need to modify `tuner.csd` to suit your environment.
+ * I intend to eventually provide a Windows command file that's equivalent in function to `tuner.sh`.

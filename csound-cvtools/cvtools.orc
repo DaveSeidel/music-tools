@@ -14,14 +14,42 @@
 #define CVT_SCALING_FACTOR  #0.1#
 
 ; 2ms trigger
+
+;-------------------------------------------------------------------------------
+; macros
+;-------------------------------------------------------------------------------
+
+; voltage scaling
+#define CVT_SCALING_FACTOR  #0.1#
+
+; 2ms trigger
 #define CVT_TRIG_DUR    #0.002#
 
 ; 5V impulse
 #define CVT_IMP_VAL     #5 * $CVT_SCALING_FACTOR#
 
+; 5V impulse
+#define CVT_IMP_VAL     #5 * $CVT_SCALING_FACTOR#
+
+; gate IDs
 ; gate IDs
 gk_cvt_gates[] init 16
 
+; tuning base / freq0
+; oct value 4.0 => C0 (MIDI note 12)
+#ifndef CVT_TUNING_BASE
+#define CVT_TUNING_BASE #4.0#
+#endif
+gi_cvt_f0 = cpsoct($CVT_TUNING_BASE)
+
+
+; frequency-to-pitch-voltage conversion 
+#define CVT_F2P(FREQ)  #log2($FREQ / gi_cvt_f0) * $CVT_SCALING_FACTOR#
+
+
+;-------------------------------------------------------------------------------
+; instrument definitions, used by the UDOs
+;-------------------------------------------------------------------------------
 ; tuning base / freq0
 ; oct value 4.0 => C0 (MIDI note 12)
 #ifndef CVT_TUNING_BASE
@@ -173,6 +201,11 @@ instr +_asr_exp_env
     endif
     outch(ichn, expseg:a(ibeg, idur*idur1, imid, idur*idur2, imid, idur*idur3, iend))
 endin
+
+
+;-------------------------------------------------------------------------------
+; UDOs
+;-------------------------------------------------------------------------------
 
 
 ;-------------------------------------------------------------------------------
